@@ -49,6 +49,10 @@ const icTwitterLogo = "assets/icons/twitter_logo.png";
 const icWallet = "assets/icons/wallet.png";
 const icWhiteTick = "assets/icons/white_tick.png";
 const icWholeSale = "assets/icons/wholesale.png";
+const icAppointment = "assets/icons/events.png";
+const icstore = "assets/icons/coffee-shop.png";
+const ichealthtrack = "assets/icons/tracker.png";
+const icblogs = "assets/icons/blogging.png";
 
 //images
 
@@ -129,7 +133,7 @@ const imgeasypaisa = "assets/images/download1.png";
 const imgTwocheckout = "assets/images/twocheckout.png";
 const imgVogue = "assets/images/vogue.png";
 const imgWallet = "assets/images/wallet.png";
-const babyimg = "assets/images/Baby_img.jpg";
+const petIcon = "assets/images/peticon.png";
 const shop2 = "assets/images/shop2.png";
 const shop3 = "assets/images/shop3.png";
 const shop1 = "assets/images/shop1.png";
