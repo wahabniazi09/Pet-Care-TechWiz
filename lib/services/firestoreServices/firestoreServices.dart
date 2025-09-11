@@ -29,4 +29,8 @@ class Firestoreservices {
         .where("shelter_id", isEqualTo: uid)
         .snapshots();
   }
+
+  static getAnimal() {
+    return FirebaseFirestore.instance.collection(animalCollection).snapshots();
+  }
 }

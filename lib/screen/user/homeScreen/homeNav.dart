@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:pet_care/consts/images.dart';
-import 'package:pet_care/screen/user/CartScreen.dart/cartScreen.dart';
-import 'package:pet_care/screen/user/CategoryScreen/categoryScreen.dart';
+import 'package:pet_care/screen/user/CartScreen/cartScreen.dart';
+import 'package:pet_care/screen/user/storeScreen/storeScreen.dart';
 import 'package:pet_care/screen/user/ProfileScreen/profileScreen.dart';
 import 'package:pet_care/screen/user/homeScreen/homeScreen.dart';
 
@@ -19,16 +19,16 @@ class _HomeState extends State<Home> {
     BottomNavigationBarItem(
         icon: Image.asset(icHome, width: 25), label: 'Home'),
     BottomNavigationBarItem(
-        icon: Image.asset(icCategories, width: 25), label: 'Category'),
+        icon: Image.asset(icCategories, width: 25), label: 'Store'),
     BottomNavigationBarItem(
-        icon: Image.asset(icCart, width: 25), label: 'Cart'),
+        icon: Image.asset(icCart, width: 25), label: 'Blogs'),
     BottomNavigationBarItem(
         icon: Image.asset(icProfile, width: 25), label: 'Profile'),
   ];
 
   var navBody = [
-    Homescreen(),
-    Categoryscreen(),
+    HomeScreen(),
+    StoreScreen(),
     Cartscreen(),
     Profilescreen(),
   ];
