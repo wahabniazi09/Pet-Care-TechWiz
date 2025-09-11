@@ -2,8 +2,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:pet_care/consts/consts.dart';
-import 'package:pet_care/screen/petOwnerDashboard/petNav.dart';
-import 'package:pet_care/screen/petOwnerDashboard/petScreen.dart';
+import 'package:pet_care/screen/petOwnerDashboard/petHome/petNav.dart';
+
 import 'package:pet_care/screen/shelterDashboard/shelterScreen.dart';
 import 'package:pet_care/screen/user/homeScreen/homeNav.dart';
 import 'package:pet_care/screen/vetDashboard/vetScreen.dart';

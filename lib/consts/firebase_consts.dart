@@ -6,6 +6,6 @@ FirebaseFirestore firestore = FirebaseFirestore.instance;
 User? currentUser = auth.currentUser;
 
 const userCollection = "users";
-const productsCollection = "products";
-const cartsCollection = "cart";
-const ordersCollection = "order";
+const petCollection = "pet";
+const animalCollection = "animal";
+const productCollection = "products";

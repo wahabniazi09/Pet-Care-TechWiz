@@ -78,42 +78,46 @@ String? validateField(String? value, String fieldType) {
   return null;
 }
 
-String? validateProductName(String? value) {
+String? validatePetName(String? value) {
   if (value == null || value.isEmpty) {
-    return "Product Name is required";
+    return "Pet name is required";
+  }
+  if (value.length < 2) {
+    return "Pet name must be at least 2 characters";
   }
   return null;
 }
 
-String? validateProductDescription(String? value) {
+String? validatePetAge(String? value) {
   if (value == null || value.isEmpty) {
-    return "Product Description is required";
-  }
-  return null;
-}
-
-String? validatePrice(String? value) {
-  if (value == null || value.isEmpty) {
-    return "Enter Product Price";
-  }
-  if (double.tryParse(value) == null || double.parse(value) <= 0) {
-    return "Enter a valid price";
-  }
-  if (value.length > 10) {
-    return "Price cannot exceed 4 digits";
-  }
-  return null;
-}
-
-String? validateQuantity(String? value) {
-  if (value == null || value.isEmpty) {
-    return "Enter Quantity";
+    return "Pet age is required";
   }
   if (int.tryParse(value) == null || int.parse(value) <= 0) {
-    return "Enter a valid quantity";
+    return "Enter a valid age";
   }
-  if (value.length > 4) {
-    return "Quantity cannot exceed 4 digits";
+  if (int.parse(value) > 50) {
+    return "Age seems unrealistic for a pet";
+  }
+  return null;
+}
+
+String? validatePetBreed(String? value) {
+  if (value == null || value.isEmpty) {
+    return "Pet breed is required";
+  }
+  return null;
+}
+
+String? validatePetSpecies(String? value) {
+  if (value == null || value.isEmpty) {
+    return "Pet species is required";
+  }
+  return null;
+}
+
+String? validatePetGender(String? value) {
+  if (value == null || value.isEmpty) {
+    return "Please select gender";
   }
   return null;
 }

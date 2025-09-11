@@ -6,4 +6,7 @@ class Petownerservices {
   var petBreadController = TextEditingController();
   var petSpeciesController = TextEditingController();
   var petGenderController = TextEditingController();
+
+  String slectedGender = "Male";
+  final List<String> genderList = ["Male", "Female"];
 }

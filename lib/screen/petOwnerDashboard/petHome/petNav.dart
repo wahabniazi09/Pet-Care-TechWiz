@@ -3,7 +3,7 @@ import 'package:pet_care/consts/images.dart';
 import 'package:pet_care/screen/petOwnerDashboard/petAppoinments.dart/petAppoinment.dart';
 import 'package:pet_care/screen/petOwnerDashboard/petBlogs.dart/petBlogs.dart';
 import 'package:pet_care/screen/petOwnerDashboard/petHealthAndTips/petHealthAndTips.dart';
-import 'package:pet_care/screen/petOwnerDashboard/petScreen.dart';
+import 'package:pet_care/screen/petOwnerDashboard/petHome/petScreen.dart';
 import 'package:pet_care/screen/petOwnerDashboard/petStore/petStore.dart';
 
 class PetNav extends StatefulWidget {

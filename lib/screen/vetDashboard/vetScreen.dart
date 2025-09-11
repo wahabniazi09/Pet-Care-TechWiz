@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:pet_care/services/auth/authentication.dart';
+import 'package:pet_care/services/authServices/authentication.dart';
 
 class VetScreen extends StatefulWidget {
   const VetScreen({super.key});

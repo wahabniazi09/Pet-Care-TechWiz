@@ -1,12 +1,15 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:pet_care/consts/firebase_consts.dart';
+import 'package:pet_care/screen/petOwnerDashboard/petHome/petNav.dart';
+import 'package:pet_care/screen/shelterDashboard/shelterScreen.dart';
 import 'package:pet_care/screen/user/homeScreen/homeNav.dart';
 import 'package:pet_care/screen/login_register_screen/loginScreen.dart';
+import 'package:pet_care/screen/vetDashboard/vetScreen.dart';
 import 'package:pet_care/screen/widgets/custom_form.dart';
 import 'package:pet_care/screen/widgets/ownButton.dart';
-import 'package:pet_care/services/auth/authentication.dart';
-import 'package:pet_care/services/validation_services.dart';
+import 'package:pet_care/services/authServices/authentication.dart';
+import 'package:pet_care/services/validationServices/validation_services.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -193,9 +196,21 @@ class _RegisterScreenState extends State<RegisterScreen> {
             const SnackBar(content: Text('Signup Successful')),
           );
 
+          Widget switchRoleScreeen;
+
+          switch (selectedRole) {
+            case "vet":
+              switchRoleScreeen = const VetScreen();
+              break;
+            case "shelter":
+              switchRoleScreeen = const ShelterScreen();
+              break;
+            default:
+              switchRoleScreeen = const PetNav();
+          }
           Navigator.pushReplacement(
             context,
-            MaterialPageRoute(builder: (context) => const Home()),
+            MaterialPageRoute(builder: (context) => switchRoleScreeen),
           );
         }
       } catch (e) {

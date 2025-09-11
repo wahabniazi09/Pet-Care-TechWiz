@@ -1,8 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:pet_care/consts/consts.dart';
-import 'package:pet_care/screen/petOwnerDashboard/petNav.dart';
-import 'package:pet_care/screen/petOwnerDashboard/petScreen.dart';
+import 'package:pet_care/screen/petOwnerDashboard/petHome/petNav.dart';
 import 'package:pet_care/screen/shelterDashboard/shelterScreen.dart';
 import 'package:pet_care/screen/user/homeScreen/homeNav.dart';
 import 'package:pet_care/screen/login_register_screen/ForgetScreen.dart';
@@ -10,8 +9,8 @@ import 'package:pet_care/screen/login_register_screen/registerScreen.dart';
 import 'package:pet_care/screen/vetDashboard/vetScreen.dart';
 import 'package:pet_care/screen/widgets/custom_form.dart';
 import 'package:pet_care/screen/widgets/ownButton.dart';
-import 'package:pet_care/services/auth/authentication.dart';
-import 'package:pet_care/services/validation_services.dart';
+import 'package:pet_care/services/authServices/authentication.dart';
+import 'package:pet_care/services/validationServices/validation_services.dart';
 
 class Loginscreen extends StatefulWidget {
   const Loginscreen({super.key});
