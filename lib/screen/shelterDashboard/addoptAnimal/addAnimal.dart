@@ -22,8 +22,8 @@ class AddAnimal extends StatefulWidget {
 class _AddAnimalState extends State<AddAnimal> {
   final _formKey = GlobalKey<FormState>();
   final shelterownerservices = ShelterOwnerServices();
-  Uint8List? profileImageWeb;
-  String? profileImagePath;
+  Uint8List? animalImageWeb;
+  String? animalImagePath;
 
   bool isLoading = false;
 
@@ -257,16 +257,16 @@ class _AddAnimalState extends State<AddAnimal> {
                       borderRadius: BorderRadius.circular(12),
                       color: Colors.deepPurple[200],
                     ),
-                    child: profileImageWeb != null
+                    child: animalImageWeb != null
                         ? ClipRRect(
                             borderRadius: BorderRadius.circular(12),
-                            child: Image.memory(profileImageWeb!,
+                            child: Image.memory(animalImageWeb!,
                                 fit: BoxFit.cover),
                           )
-                        : profileImagePath != null
+                        : animalImagePath != null
                             ? ClipRRect(
                                 borderRadius: BorderRadius.circular(12),
-                                child: Image.file(File(profileImagePath!),
+                                child: Image.file(File(animalImagePath!),
                                     fit: BoxFit.cover),
                               )
                             : const Icon(Icons.camera_alt,
@@ -310,9 +310,9 @@ class _AddAnimalState extends State<AddAnimal> {
 
     if (pickedFile != null) {
       if (kIsWeb) {
-        profileImageWeb = await pickedFile.readAsBytes();
+        animalImageWeb = await pickedFile.readAsBytes();
       } else {
-        profileImagePath = pickedFile.path;
+        animalImagePath = pickedFile.path;
       }
       setState(() {});
     }
@@ -320,8 +320,8 @@ class _AddAnimalState extends State<AddAnimal> {
 
   Future<void> saveAnimal(BuildContext context) async {
     try {
-      if ((kIsWeb && profileImageWeb == null) ||
-          (!kIsWeb && profileImagePath == null)) {
+      if ((kIsWeb && animalImageWeb == null) ||
+          (!kIsWeb && animalImagePath == null)) {
         showError("Please select an image");
         return;
       }
@@ -329,8 +329,8 @@ class _AddAnimalState extends State<AddAnimal> {
       setState(() => isLoading = true);
 
       String base64image = kIsWeb
-          ? base64Encode(profileImageWeb!)
-          : base64Encode(File(profileImagePath!).readAsBytesSync());
+          ? base64Encode(animalImageWeb!)
+          : base64Encode(File(animalImagePath!).readAsBytesSync());
 
       final user = FirebaseAuth.instance.currentUser;
       if (user == null) {

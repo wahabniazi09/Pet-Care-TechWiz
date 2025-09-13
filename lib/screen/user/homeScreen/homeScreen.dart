@@ -1,17 +1,61 @@
-import 'dart:async';
 import 'dart:convert';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:pet_care/consts/firebase_consts.dart';
+import 'package:pet_care/screen/user/homeScreen/components/bookAppointment.dart';
 import 'package:pet_care/screen/user/homeScreen/petDetailsScreen.dart';
 import 'package:pet_care/screen/user/homeScreen/components/blogDetails.dart';
+import 'package:pet_care/screen/user/storeScreen/components/item_details.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
+}
+
+// ------------------- ViewAllScreen -------------------
+
+class ViewAllScreen extends StatelessWidget {
+  final String title;
+  final List<Map<String, dynamic>> items;
+  final Widget Function(Map<String, dynamic> item) itemBuilder;
+
+  const ViewAllScreen({
+    super.key,
+    required this.title,
+    required this.items,
+    required this.itemBuilder,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    double screenWidth = MediaQuery.of(context).size.width;
+    int crossAxisCount = 2;
+    double spacing = 16;
+    double itemWidth =
+        (screenWidth - (crossAxisCount + 1) * spacing) / crossAxisCount;
+    double itemHeight = 350;
+    double aspectRatio = itemWidth / itemHeight;
+
+    return Scaffold(
+      appBar: AppBar(title: Text(title)),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: GridView.builder(
+          itemCount: items.length,
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: crossAxisCount,
+            mainAxisSpacing: spacing,
+            crossAxisSpacing: spacing,
+            childAspectRatio: aspectRatio,
+          ),
+          itemBuilder: (context, index) => itemBuilder(items[index]),
+        ),
+      ),
+    );
+  }
 }
 
 class _HomeScreenState extends State<HomeScreen> {
@@ -48,6 +92,14 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  void _bookAppointment(Map<String, dynamic> vet) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => BookAppointmentScreen(vet: vet)),
+    );
+  }
+
+  // ------------------- AppBar -------------------
   Widget _buildAppBar() {
     return SliverAppBar(
       backgroundColor: Colors.white,
@@ -129,6 +181,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  // ------------------- Hero Section -------------------
   Widget _buildHeroSection() {
     return SliverToBoxAdapter(
       child: Container(
@@ -154,7 +207,7 @@ class _HomeScreenState extends State<HomeScreen> {
             Positioned(
               right: 0,
               bottom: 0,
-              child: Image.asset('assets/images/1_img.png', height: 140),
+              child: Image.asset('assets/images/pet123.png', height: 140),
             ),
             const Padding(
               padding: EdgeInsets.only(left: 24, top: 24),
@@ -197,7 +250,13 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget sectionHeading(String title, VoidCallback onViewAll) => Padding(
+  // ------------------- Section Heading with View All -------------------
+  Widget sectionHeading(
+    String title,
+    List<Map<String, dynamic>> items,
+    Widget Function(Map<String, dynamic>) itemBuilder,
+  ) =>
+      Padding(
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -211,7 +270,19 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
             TextButton(
-              onPressed: onViewAll,
+              onPressed: () {
+                if (items.isEmpty) return;
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => ViewAllScreen(
+                      title: title,
+                      items: items,
+                      itemBuilder: itemBuilder,
+                    ),
+                  ),
+                );
+              },
               child: const Text(
                 "View All",
                 style: TextStyle(
@@ -224,84 +295,7 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
       );
 
-  // Adoption Carousel
-  Widget animalCarousel() => _carouselBuilder(
-        collection: animalCollection,
-        emptyIcon: Icons.pets,
-        emptyText: "No animals available",
-        cardBuilder: (item) => _animalCard(item),
-      );
-
-  // Blogs Carousel
-  Widget blogsCarousel() => _carouselBuilder(
-        collection: "blogs",
-        emptyIcon: Icons.article,
-        emptyText: "No blogs available",
-        cardBuilder: (item) => _blogCard(item['data'], item['id']),
-        customMap: (doc) =>
-            {'id': doc.id, 'data': doc.data() as Map<String, dynamic>},
-      );
-
-  // Products Carousel
-  Widget productsCarousel() => _carouselBuilder(
-        collection: "products",
-        emptyIcon: Icons.shopping_bag,
-        emptyText: "No products available",
-        cardBuilder: (item) => _productCard(item),
-      );
-
-  Widget _carouselBuilder({
-    required String collection,
-    required IconData emptyIcon,
-    required String emptyText,
-    required Widget Function(dynamic item) cardBuilder,
-    dynamic Function(QueryDocumentSnapshot)? customMap,
-  }) {
-    return SizedBox(
-      height: 360,
-      child: StreamBuilder<QuerySnapshot>(
-        stream: FirebaseFirestore.instance.collection(collection).snapshots(),
-        builder: (context, snapshot) {
-          if (!snapshot.hasData) {
-            return const Center(
-              child: CircularProgressIndicator(
-                valueColor: AlwaysStoppedAnimation<Color>(
-                    Color.fromARGB(255, 84, 37, 165)),
-              ),
-            );
-          }
-
-          final items = snapshot.data!.docs
-              .map((doc) => customMap != null
-                  ? customMap(doc)
-                  : doc.data() as Map<String, dynamic>)
-              .toList();
-
-          if (items.isEmpty) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(emptyIcon, size: 50, color: Colors.grey[400]),
-                  const SizedBox(height: 12),
-                  Text(emptyText, style: TextStyle(color: Colors.grey[600])),
-                ],
-              ),
-            );
-          }
-
-          return ListView.builder(
-            scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            itemCount: items.length,
-            itemBuilder: (context, index) => cardBuilder(items[index]),
-          );
-        },
-      ),
-    );
-  }
-
-  // 🔹 Animal Card
+  // ------------------- Cards -------------------
   Widget _animalCard(Map<String, dynamic> animal) => Container(
         width: 260,
         margin: const EdgeInsets.only(right: 16),
@@ -342,7 +336,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   if (!_isLoggedIn()) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
-                          content: Text("Please login to addopt to animal")),
+                          content: Text("Please login to adopt an animal")),
                     );
                     return;
                   }
@@ -478,14 +472,18 @@ class _HomeScreenState extends State<HomeScreen> {
                   if (!_isLoggedIn()) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
-                          content: Text("Please login to add product to cart")),
+                          content: Text("Please login to buy Product")),
                     );
                     return;
                   }
-                  print("Product tapped: ${product["p_name"]}");
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (_) => ItemDetails(
+                              title: product["p_name"], data: product)));
                 },
                 style: _buttonStyle(),
-                child: const Text("Add to Cart"),
+                child: const Text("Buy Product"),
               ),
             ),
             const SizedBox(height: 12),
@@ -493,6 +491,103 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
       );
 
+  Widget _vetCard(Map<String, dynamic> vet) => Container(
+        width: 220,
+        margin: const EdgeInsets.only(right: 16),
+        decoration: _cardDecoration(),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _imageBuilder(vet["profilePic"], 140, Icons.person),
+            Padding(
+              padding: const EdgeInsets.all(12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(vet["name"] ?? "Unnamed Vet",
+                      style: const TextStyle(
+                          fontWeight: FontWeight.bold, fontSize: 16)),
+                  const SizedBox(height: 4),
+                  Text(vet["speciality"] ?? "Veterinarian",
+                      style: TextStyle(color: Colors.grey[600], fontSize: 13)),
+                  const SizedBox(height: 8),
+                  Center(
+                    child: ElevatedButton(
+                      onPressed: () {
+                        if (!_isLoggedIn()) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                                content:
+                                    Text("Please login to book appointment")),
+                          );
+                          return;
+                        }
+                        _bookAppointment(vet);
+                      },
+                      style: _buttonStyle(),
+                      child: const Text("Book Appointment"),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      );
+
+  // ------------------- Carousel Builder -------------------
+  Widget _carouselBuilder({
+    required String collection,
+    required IconData emptyIcon,
+    required String emptyText,
+    required Widget Function(dynamic item) cardBuilder,
+    dynamic Function(QueryDocumentSnapshot)? customMap,
+  }) {
+    return SizedBox(
+      height: 360,
+      child: StreamBuilder<QuerySnapshot>(
+        stream: FirebaseFirestore.instance.collection(collection).snapshots(),
+        builder: (context, snapshot) {
+          if (!snapshot.hasData) {
+            return const Center(
+              child: CircularProgressIndicator(
+                valueColor: AlwaysStoppedAnimation<Color>(
+                    Color.fromARGB(255, 84, 37, 165)),
+              ),
+            );
+          }
+
+          final items = snapshot.data!.docs
+              .map((doc) => customMap != null
+                  ? customMap(doc)
+                  : doc.data() as Map<String, dynamic>)
+              .toList();
+
+          if (items.isEmpty) {
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(emptyIcon, size: 50, color: Colors.grey[400]),
+                  const SizedBox(height: 12),
+                  Text(emptyText, style: TextStyle(color: Colors.grey[600])),
+                ],
+              ),
+            );
+          }
+
+          return ListView.builder(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            itemCount: items.length,
+            itemBuilder: (context, index) => cardBuilder(items[index]),
+          );
+        },
+      ),
+    );
+  }
+
+  // ------------------- Helper Methods -------------------
   BoxDecoration _cardDecoration() => BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
@@ -537,18 +632,153 @@ class _HomeScreenState extends State<HomeScreen> {
           slivers: [
             _buildAppBar(),
             _buildHeroSection(),
-            SliverToBoxAdapter(child: sectionHeading("Adoption", () {})),
-            SliverToBoxAdapter(child: animalCarousel()),
-            SliverToBoxAdapter(child: const SizedBox(height: 24)),
-            SliverToBoxAdapter(child: sectionHeading("Pet Products", () {})),
-            SliverToBoxAdapter(child: productsCarousel()),
-            SliverToBoxAdapter(child: const SizedBox(height: 24)),
-            SliverToBoxAdapter(child: sectionHeading("Pet Care Blogs", () {})),
-            SliverToBoxAdapter(child: blogsCarousel()),
-            SliverToBoxAdapter(child: const SizedBox(height: 24)),
+
+            // ------------------- Veterinarians -------------------
+            StreamBuilder<QuerySnapshot>(
+              stream: FirebaseFirestore.instance
+                  .collection("users")
+                  .where("role", isEqualTo: "vet")
+                  .snapshots(),
+              builder: (context, snapshot) {
+                if (!snapshot.hasData)
+                  return const SliverToBoxAdapter(child: SizedBox());
+                final vets = snapshot.data!.docs
+                    .map((doc) => doc.data() as Map<String, dynamic>)
+                    .toList();
+                return SliverToBoxAdapter(
+                  child: Column(
+                    children: [
+                      sectionHeading("Veterinarians", vets, _vetCard),
+                      vets.isEmpty ? const SizedBox() : vetsCarousel(vets),
+                    ],
+                  ),
+                );
+              },
+            ),
+
+            const SliverToBoxAdapter(child: SizedBox(height: 24)),
+
+            // ------------------- Adoption -------------------
+            StreamBuilder<QuerySnapshot>(
+              stream: FirebaseFirestore.instance
+                  .collection(animalCollection)
+                  .snapshots(),
+              builder: (context, snapshot) {
+                if (!snapshot.hasData)
+                  return const SliverToBoxAdapter(child: SizedBox());
+                final animals = snapshot.data!.docs
+                    .map((doc) => doc.data() as Map<String, dynamic>)
+                    .toList();
+                return SliverToBoxAdapter(
+                  child: Column(
+                    children: [
+                      sectionHeading("Adoption", animals, _animalCard),
+                      animals.isEmpty
+                          ? const SizedBox()
+                          : animalCarousel(animals),
+                    ],
+                  ),
+                );
+              },
+            ),
+
+            const SliverToBoxAdapter(child: SizedBox(height: 24)),
+
+            // ------------------- Products -------------------
+            StreamBuilder<QuerySnapshot>(
+              stream:
+                  FirebaseFirestore.instance.collection("products").snapshots(),
+              builder: (context, snapshot) {
+                if (!snapshot.hasData)
+                  return const SliverToBoxAdapter(child: SizedBox());
+                final products = snapshot.data!.docs
+                    .map((doc) => doc.data() as Map<String, dynamic>)
+                    .toList();
+                return SliverToBoxAdapter(
+                  child: Column(
+                    children: [
+                      sectionHeading("Pet Products", products, _productCard),
+                      products.isEmpty
+                          ? const SizedBox()
+                          : productsCarousel(products),
+                    ],
+                  ),
+                );
+              },
+            ),
+
+            const SliverToBoxAdapter(child: SizedBox(height: 24)),
+
+            // ------------------- Blogs -------------------
+            StreamBuilder<QuerySnapshot>(
+              stream:
+                  FirebaseFirestore.instance.collection("blogs").snapshots(),
+              builder: (context, snapshot) {
+                if (!snapshot.hasData)
+                  return const SliverToBoxAdapter(child: SizedBox());
+                final blogs = snapshot.data!.docs
+                    .map((doc) => {
+                          'id': doc.id,
+                          'data': doc.data() as Map<String, dynamic>
+                        })
+                    .toList();
+                return SliverToBoxAdapter(
+                  child: Column(
+                    children: [
+                      sectionHeading("Pet Care Blogs", blogs,
+                          (item) => _blogCard(item['data'], item['id'])),
+                      blogs.isEmpty ? const SizedBox() : blogsCarousel(blogs),
+                    ],
+                  ),
+                );
+              },
+            ),
+
+            const SliverToBoxAdapter(child: SizedBox(height: 24)),
           ],
         ),
       ),
     );
   }
+
+  Widget vetsCarousel(List<Map<String, dynamic>> vets) => SizedBox(
+        height: 300,
+        child: ListView.builder(
+          scrollDirection: Axis.horizontal,
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          itemCount: vets.length,
+          itemBuilder: (context, index) => _vetCard(vets[index]),
+        ),
+      );
+
+  Widget animalCarousel(List<Map<String, dynamic>> animals) => SizedBox(
+        height: 360,
+        child: ListView.builder(
+          scrollDirection: Axis.horizontal,
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          itemCount: animals.length,
+          itemBuilder: (context, index) => _animalCard(animals[index]),
+        ),
+      );
+
+  Widget productsCarousel(List<Map<String, dynamic>> products) => SizedBox(
+        height: 360,
+        child: ListView.builder(
+          scrollDirection: Axis.horizontal,
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          itemCount: products.length,
+          itemBuilder: (context, index) => _productCard(products[index]),
+        ),
+      );
+
+  Widget blogsCarousel(List<Map<String, dynamic>> blogs) => SizedBox(
+        height: 360,
+        child: ListView.builder(
+          scrollDirection: Axis.horizontal,
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          itemCount: blogs.length,
+          itemBuilder: (context, index) =>
+              _blogCard(blogs[index]['data'], blogs[index]['id']),
+        ),
+      );
 }

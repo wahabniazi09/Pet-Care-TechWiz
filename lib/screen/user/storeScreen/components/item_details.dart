@@ -1,5 +1,8 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:pet_care/screen/user/ProfileScreen/cartScreen.dart';
 import 'package:pet_care/consts/colors.dart';
 import 'package:pet_care/consts/styles.dart';
 
@@ -16,64 +19,91 @@ class ItemDetails extends StatefulWidget {
 class _ItemDetailsState extends State<ItemDetails> {
   int quantity = 1;
 
+  Future<void> addToCart() async {
+    final User? user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Please login to add items to cart")),
+      );
+      return;
+    }
+
+    final cartRef = FirebaseFirestore.instance
+        .collection("users")
+        .doc(user.uid)
+        .collection("cart")
+        .doc(widget.data["p_id"]);
+
+    final cartItem = await cartRef.get();
+
+    if (cartItem.exists) {
+      await cartRef.update({
+        "quantity": (cartItem.data()?["quantity"] ?? 0) + quantity,
+      });
+    } else {
+      await cartRef.set({
+        "p_id": widget.data["p_id"],
+        "p_name": widget.data["p_name"],
+        "p_price": widget.data["p_price"],
+        "p_image": widget.data["p_image"] ?? '',
+        "quantity": quantity,
+        "added_at": FieldValue.serverTimestamp(),
+      });
+    }
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text("Added $quantity item(s) to cart")),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     var product = widget.data;
-
-    List<String> images = [];
-    if (product["p_image"] != null && product["p_image"] is List) {
-      images = List<String>.from(product["p_image"]);
-    } else if (product["p_image"] != null) {
-      images = [product["p_image"]];
-    }
 
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.title, style: const TextStyle(fontFamily: bold)),
         actions: [
-          IconButton(onPressed: () {}, icon: const Icon(Icons.favorite_border)),
+          IconButton(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const CartScreen()),
+              );
+            },
+            icon: const Icon(Icons.shopping_cart),
+          ),
         ],
       ),
       body: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            SizedBox(
-              height: 300,
-              child: PageView.builder(
-                itemCount: images.length,
-                itemBuilder: (context, index) {
-                  return Image.memory(
-                    base64Decode(images[index]),
-                    fit: BoxFit.cover,
-                    width: double.infinity,
-                  );
-                },
-              ),
-            ),
+            const SizedBox(height: 20),
+            if (product["p_image"] != null &&
+                product["p_image"].toString().isNotEmpty)
+              Image.memory(base64Decode(product["p_image"]),
+                  width: double.infinity, height: 250, fit: BoxFit.cover)
+            else
+              Container(
+                  height: 250,
+                  color: Colors.grey,
+                  child: const Icon(Icons.image, size: 80)),
             const SizedBox(height: 20),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 12),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    product["p_name"] ?? "No name",
-                    style: const TextStyle(
-                      fontSize: 20,
-                      fontFamily: semibold,
-                      color: darkFontGrey,
-                    ),
-                  ),
+                  Text(product["p_name"] ?? "No name",
+                      style: const TextStyle(
+                          fontSize: 20,
+                          fontFamily: semibold,
+                          color: Colors.black87)),
                   const SizedBox(height: 6),
-                  Text(
-                    "Rs: ${product["p_price"] ?? 0}",
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontFamily: bold,
-                      color: redColor,
-                    ),
-                  ),
+                  Text("Rs: ${product["p_price"] ?? 0}",
+                      style: const TextStyle(
+                          fontSize: 18, fontFamily: bold, color: redColor)),
                 ],
               ),
             ),
@@ -86,32 +116,21 @@ class _ItemDetailsState extends State<ItemDetails> {
                       style: TextStyle(fontFamily: semibold)),
                   const SizedBox(width: 12),
                   IconButton(
-                    onPressed: () {
-                      if (quantity > 1) {
-                        setState(() => quantity--);
-                      }
-                    },
-                    icon: const Icon(Icons.remove),
-                  ),
+                      onPressed: () {
+                        if (quantity > 1) setState(() => quantity--);
+                      },
+                      icon: const Icon(Icons.remove)),
                   Text("$quantity",
                       style: const TextStyle(
-                          fontSize: 16, fontFamily: bold, color: darkFontGrey)),
+                          fontSize: 16,
+                          fontFamily: bold,
+                          color: Colors.black87)),
                   IconButton(
-                    onPressed: () {
-                      if (quantity <
-                          (int.tryParse(product["p_quantity"].toString()) ??
-                              1)) {
-                        setState(() => quantity++);
-                      }
-                    },
-                    icon: const Icon(Icons.add),
-                  ),
-                  const SizedBox(width: 10),
-                  Text(
-                    "${product["p_quantity"] ?? 0} available",
-                    style: const TextStyle(
-                        fontFamily: semibold, color: textfieldGrey),
-                  ),
+                      onPressed: () {
+                        if (quantity < (product["p_quantity"] ?? 100))
+                          setState(() => quantity++);
+                      },
+                      icon: const Icon(Icons.add)),
                 ],
               ),
             ),
@@ -124,13 +143,9 @@ class _ItemDetailsState extends State<ItemDetails> {
                   const Text("Description",
                       style: TextStyle(fontFamily: bold, fontSize: 16)),
                   const SizedBox(height: 8),
-                  Text(
-                    product["p_desc"] ?? "No description provided.",
-                    style: const TextStyle(
-                      fontFamily: semibold,
-                      color: darkFontGrey,
-                    ),
-                  ),
+                  Text(product["p_desc"] ?? "No description provided.",
+                      style: const TextStyle(
+                          fontFamily: semibold, color: Colors.black54)),
                 ],
               ),
             ),
@@ -147,18 +162,11 @@ class _ItemDetailsState extends State<ItemDetails> {
             shape:
                 RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
           ),
-          onPressed: () {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text("Added $quantity item(s) to cart")),
-            );
-          },
+          onPressed: addToCart,
           child: const Text(
             "Add To Cart",
-            style: TextStyle(
-              fontFamily: bold,
-              fontSize: 16,
-              color: Colors.white,
-            ),
+            style:
+                TextStyle(fontFamily: bold, fontSize: 16, color: Colors.white),
           ),
         ),
       ),

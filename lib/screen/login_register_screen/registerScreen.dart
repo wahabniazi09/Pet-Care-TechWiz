@@ -45,6 +45,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     final width = MediaQuery.of(context).size.width;
 
     return Scaffold(
+      appBar: AppBar(),
       backgroundColor: Colors.white,
       body: SingleChildScrollView(
         child: Form(
