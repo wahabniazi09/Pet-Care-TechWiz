@@ -262,6 +262,7 @@ class _AddProductState extends State<AddProduct> {
       var store =
           FirebaseFirestore.instance.collection(productCollection).doc();
       await store.set({
+        "p_id": store.id,
         "shelter_id": user.uid,
         'p_name': pnameController.text,
         'p_desc': pdescController.text,
