@@ -8,66 +8,93 @@ import 'package:pet_care/screen/user/homeScreen/homeNav.dart';
 class Authentication {
   final FirebaseAuth auth = FirebaseAuth.instance;
   final FirebaseFirestore firestore = FirebaseFirestore.instance;
+  User? get currentUser => auth.currentUser;
 
-  Future<UserCredential?> signIn(
-      {required String email, required String password}) async {
-    UserCredential? userCredential;
-    try {
-      userCredential = await auth.signInWithEmailAndPassword(
-          email: email, password: password);
-    } on FirebaseAuthException catch (e) {
-      e.toString();
-    }
-    return userCredential;
+
+  Future<String?> getUserRole() async {
+    if (currentUser == null) return null;
+    final doc =
+        await firestore.collection(userCollection).doc(currentUser!.uid).get();
+    return doc.data()?['role'] as String?;
   }
 
-  Future<UserCredential?> signUp(
-      {required String email, required String password}) async {
-    UserCredential? userCredential;
+  Future<UserCredential> signIn({
+    required String email,
+    required String password,
+  }) async {
     try {
-      userCredential = await auth.createUserWithEmailAndPassword(
-          email: email, password: password);
+      return await auth.signInWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
     } on FirebaseAuthException catch (e) {
-      e.toString();
+      throw e; 
+    } catch (e) {
+      rethrow;
     }
-    return userCredential;
+  }
+  Future<UserCredential> signUp({
+    required String email,
+    required String password,
+  }) async {
+    try {
+      return await auth.createUserWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+    } on FirebaseAuthException catch (e) {
+      throw e;
+    } catch (e) {
+      rethrow;
+    }
   }
 
-  storeUserData(
-      {required String name,
-      required String email,
-      required String phone,
-      required String address,
-      required String role}) async {
-    final user = auth.currentUser;
+  Future<void> storeUserData({
+    required String name,
+    required String email,
+    required String phone,
+    required String address,
+    required String role,
+  }) async {
+    final user = currentUser;
     if (user == null) return;
-    DocumentReference store =
-        firestore.collection(userCollection).doc(user.uid);
-    DocumentSnapshot doc = await store.get();
+
+    final store = firestore.collection(userCollection).doc(user.uid);
+    final doc = await store.get();
+
     if (!doc.exists) {
       await store.set({
+        'id': user.uid,
         'name': name,
         'email': email,
         'phone': phone,
         'address': address,
         'role': role,
-        'id': user.uid,
+        'createdAt': FieldValue.serverTimestamp(),
       });
     }
   }
 
   Future<void> logOut(BuildContext context) async {
-    await auth.signOut();
-    currentUser == null;
-    Navigator.pushReplacement(
-        context, MaterialPageRoute(builder: (context) => Home()));
+    try {
+      await auth.signOut();
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (context) => const Home()),
+        (route) => false,
+      );
+    } catch (e) {
+      rethrow;
+    }
   }
 
   Future<void> resetPassword(String email) async {
     try {
       await auth.sendPasswordResetEmail(email: email);
+    } on FirebaseAuthException catch (e) {
+      throw e;
     } catch (e) {
-      rethrow; // Rethrow the error so that we can handle it in the UI
+      rethrow;
     }
   }
 }

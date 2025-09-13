@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:pet_care/consts/colors.dart';
 import 'package:pet_care/screen/shelterDashboard/addoptAnimal/addAnimal.dart';
 import 'package:pet_care/screen/shelterDashboard/blogScreen/addblog.dart';
