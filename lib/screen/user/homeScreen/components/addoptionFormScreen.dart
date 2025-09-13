@@ -1,7 +1,6 @@
-// Adoption Form Screen
 import 'dart:convert';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class AdoptionFormScreen extends StatefulWidget {
@@ -15,11 +14,11 @@ class AdoptionFormScreen extends StatefulWidget {
 
 class _AdoptionFormScreenState extends State<AdoptionFormScreen> {
   final _formKey = GlobalKey<FormState>();
-  final TextEditingController _nameController = TextEditingController();
-  final TextEditingController _emailController = TextEditingController();
-  final TextEditingController _phoneController = TextEditingController();
-  final TextEditingController _addressController = TextEditingController();
-  final TextEditingController _experienceController = TextEditingController();
+  final _nameController = TextEditingController();
+  final _emailController = TextEditingController();
+  final _phoneController = TextEditingController();
+  final _addressController = TextEditingController();
+  final _experienceController = TextEditingController();
 
   String? _selectedHomeType;
   bool _hasOtherPets = false;
@@ -65,16 +64,11 @@ class _AdoptionFormScreenState extends State<AdoptionFormScreen> {
                     Text(
                       widget.animal["animal_name"] ?? "Unknown",
                       style: const TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                      ),
+                          fontSize: 20, fontWeight: FontWeight.bold),
                     ),
                     Text(
                       widget.animal["breed"] ?? "Mixed Breed",
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Colors.grey[600],
-                      ),
+                      style: TextStyle(fontSize: 16, color: Colors.grey[600]),
                     ),
                   ],
                 ),
@@ -84,131 +78,36 @@ class _AdoptionFormScreenState extends State<AdoptionFormScreen> {
               // Form Title
               const Text(
                 "Adoption Application",
-                style: TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 10),
               const Text(
                 "Please fill out this form to request adoption",
-                style: TextStyle(
-                  fontSize: 16,
-                  color: Colors.grey,
-                ),
+                style: TextStyle(fontSize: 16, color: Colors.grey),
               ),
               const SizedBox(height: 20),
 
               // Personal Information
-              const Text(
-                "Personal Information",
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.deepOrange,
-                ),
-              ),
+              _buildTextField(_nameController, "Full Name", Icons.person),
               const SizedBox(height: 15),
-
-              // Name Field
-              TextFormField(
-                controller: _nameController,
-                decoration: InputDecoration(
-                  labelText: "Full Name",
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  prefixIcon: const Icon(Icons.person),
-                ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter your name';
-                  }
-                  return null;
-                },
-              ),
+              _buildTextField(_emailController, "Email", Icons.email,
+                  validator: (value) => (value == null || !value.contains('@'))
+                      ? "Enter a valid email"
+                      : null),
               const SizedBox(height: 15),
-
-              // Email Field
-              TextFormField(
-                controller: _emailController,
-                decoration: InputDecoration(
-                  labelText: "Email Address",
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  prefixIcon: const Icon(Icons.email),
-                ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter your email';
-                  }
-                  if (!value.contains('@')) {
-                    return 'Please enter a valid email';
-                  }
-                  return null;
-                },
-              ),
+              _buildTextField(_phoneController, "Phone Number", Icons.phone),
               const SizedBox(height: 15),
+              _buildTextField(_addressController, "Full Address", Icons.home,
+                  maxLines: 3),
 
-              // Phone Field
-              TextFormField(
-                controller: _phoneController,
-                decoration: InputDecoration(
-                  labelText: "Phone Number",
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  prefixIcon: const Icon(Icons.phone),
-                ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter your phone number';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 15),
-
-              // Address Field
-              TextFormField(
-                controller: _addressController,
-                maxLines: 3,
-                decoration: InputDecoration(
-                  labelText: "Full Address",
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  alignLabelWithHint: true,
-                ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter your address';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 25),
-
+              const SizedBox(height: 20),
               // Living Situation
-              const Text(
-                "Living Situation",
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.deepOrange,
-                ),
-              ),
-              const SizedBox(height: 15),
-
-              // Home Type
               DropdownButtonFormField(
                 decoration: InputDecoration(
                   labelText: "Type of Home",
                   border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  prefixIcon: const Icon(Icons.home),
+                      borderRadius: BorderRadius.circular(12)),
+                  prefixIcon: const Icon(Icons.house),
                 ),
                 value: _selectedHomeType,
                 items: const [
@@ -219,118 +118,54 @@ class _AdoptionFormScreenState extends State<AdoptionFormScreen> {
                       value: "Condominium", child: Text("Condominium")),
                   DropdownMenuItem(value: "Other", child: Text("Other")),
                 ],
-                onChanged: (value) {
-                  setState(() {
-                    _selectedHomeType = value;
-                  });
-                },
-                validator: (value) {
-                  if (value == null) {
-                    return 'Please select your home type';
-                  }
-                  return null;
-                },
+                onChanged: (value) => setState(() {
+                  _selectedHomeType = value;
+                }),
+                validator: (value) =>
+                    value == null ? "Please select your home type" : null,
               ),
               const SizedBox(height: 15),
 
-              // Other Pets
               Row(
                 children: [
                   const Text("Do you have other pets?"),
                   const Spacer(),
                   Switch(
                     value: _hasOtherPets,
-                    onChanged: (value) {
-                      setState(() {
-                        _hasOtherPets = value;
-                      });
-                    },
-                    activeColor: Colors.deepOrange,
-                  ),
+                    onChanged: (v) => setState(() => _hasOtherPets = v),
+                  )
                 ],
               ),
-              const SizedBox(height: 10),
-
-              // Children
               Row(
                 children: [
                   const Text("Do you have children?"),
                   const Spacer(),
                   Switch(
                     value: _hasChildren,
-                    onChanged: (value) {
-                      setState(() {
-                        _hasChildren = value;
-                      });
-                    },
-                    activeColor: Colors.deepOrange,
-                  ),
+                    onChanged: (v) => setState(() => _hasChildren = v),
+                  )
                 ],
               ),
-              const SizedBox(height: 25),
+              const SizedBox(height: 20),
 
-              // Experience
-              const Text(
-                "Pet Experience",
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.deepOrange,
-                ),
-              ),
-              const SizedBox(height: 15),
+              _buildTextField(_experienceController,
+                  "Tell us about your experience with pets", Icons.pets,
+                  maxLines: 4),
 
-              TextFormField(
-                controller: _experienceController,
-                maxLines: 4,
-                decoration: InputDecoration(
-                  labelText: "Tell us about your experience with pets",
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  alignLabelWithHint: true,
-                ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please share your experience';
-                  }
-                  return null;
-                },
-              ),
               const SizedBox(height: 30),
-
-              // Submit Button
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: () {
-                    if (_formKey.currentState!.validate()) {
-                      _submitAdoptionRequest();
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content:
-                              Text('Adoption request submitted successfully!'),
-                          backgroundColor: Colors.green,
-                        ),
-                      );
-                      Navigator.pop(context);
-                    }
-                  },
+                  onPressed: _submitAdoptionRequest,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.deepOrange,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                  child: const Text(
-                    "Submit Adoption Request",
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                  ),
+                      backgroundColor: Colors.deepOrange,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 16)),
+                  child: const Text("Submit Request",
+                      style:
+                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                 ),
-              ),
-              const SizedBox(height: 20),
+              )
             ],
           ),
         ),
@@ -338,8 +173,36 @@ class _AdoptionFormScreenState extends State<AdoptionFormScreen> {
     );
   }
 
-  void _submitAdoptionRequest() {
+  Widget _buildTextField(
+      TextEditingController controller, String label, IconData icon,
+      {int maxLines = 1, String? Function(String?)? validator}) {
+    return TextFormField(
+      controller: controller,
+      maxLines: maxLines,
+      decoration: InputDecoration(
+        labelText: label,
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+        prefixIcon: Icon(icon),
+      ),
+      validator: validator ??
+          (value) =>
+              (value == null || value.isEmpty) ? "Please enter $label" : null,
+    );
+  }
+
+  void _submitAdoptionRequest() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("You must be logged in to submit.")),
+      );
+      return;
+    }
+
     final adoptionRequest = {
+      'userId': user.uid, // store current user ID
       'petId': widget.animal['animal_id'],
       'petName': widget.animal['animal_name'],
       'shelterId': widget.animal['shelter_id'],
@@ -351,21 +214,16 @@ class _AdoptionFormScreenState extends State<AdoptionFormScreen> {
       'hasOtherPets': _hasOtherPets,
       'hasChildren': _hasChildren,
       'experience': _experienceController.text,
-      'submissionDate': DateTime.now().toString(),
+      'submissionDate': DateTime.now(),
     };
 
-    FirebaseFirestore.instance
+    await FirebaseFirestore.instance
         .collection('adoption_requests')
         .add(adoptionRequest);
-  }
 
-  @override
-  void dispose() {
-    _nameController.dispose();
-    _emailController.dispose();
-    _phoneController.dispose();
-    _addressController.dispose();
-    _experienceController.dispose();
-    super.dispose();
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text("Request submitted successfully!")),
+    );
+    Navigator.pop(context);
   }
 }

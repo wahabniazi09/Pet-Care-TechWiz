@@ -60,7 +60,7 @@ class _FancyLoginScreenState extends State<LoginScreen> {
           switch (role) {
             case "pet":
               Navigator.pushReplacement(context,
-                  MaterialPageRoute(builder: (context) => const PetNav()));
+                  MaterialPageRoute(builder: (context) => const Home()));
               break;
             case "shelter":
               Navigator.pushReplacement(context,

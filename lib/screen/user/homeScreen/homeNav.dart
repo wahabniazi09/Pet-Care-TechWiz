@@ -30,7 +30,7 @@ class _HomeState extends State<Home> {
     HomeScreen(),
     StoreScreen(),
     Cartscreen(),
-    Profilescreen(),
+    ProfileScreen(),
   ];
 
   @override

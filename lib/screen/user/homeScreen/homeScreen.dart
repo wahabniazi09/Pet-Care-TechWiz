@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:pet_care/consts/firebase_consts.dart';
 import 'package:pet_care/screen/user/homeScreen/petDetailsScreen.dart';
@@ -23,6 +24,10 @@ class _HomeScreenState extends State<HomeScreen> {
     _searchFocusNode.dispose();
     _searchController.dispose();
     super.dispose();
+  }
+
+  bool _isLoggedIn() {
+    return FirebaseAuth.instance.currentUser != null;
   }
 
   void _navigateToPetDetails(Map<String, dynamic> animal) {
@@ -333,7 +338,16 @@ class _HomeScreenState extends State<HomeScreen> {
             const Spacer(),
             Center(
               child: ElevatedButton.icon(
-                onPressed: () => _navigateToPetDetails(animal),
+                onPressed: () {
+                  if (!_isLoggedIn()) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                          content: Text("Please login to addopt to animal")),
+                    );
+                    return;
+                  }
+                  _navigateToPetDetails(animal);
+                },
                 icon: const Icon(Icons.favorite_border),
                 label: const Text("Adopt Now"),
                 style: _buttonStyle(),
@@ -461,10 +475,17 @@ class _HomeScreenState extends State<HomeScreen> {
             Center(
               child: ElevatedButton(
                 onPressed: () {
+                  if (!_isLoggedIn()) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                          content: Text("Please login to add product to cart")),
+                    );
+                    return;
+                  }
                   print("Product tapped: ${product["p_name"]}");
                 },
                 style: _buttonStyle(),
-                child: const Text("Buy Now"),
+                child: const Text("Add to Cart"),
               ),
             ),
             const SizedBox(height: 12),

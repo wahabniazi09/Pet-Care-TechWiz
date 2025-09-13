@@ -39,7 +39,7 @@ class _SplashScreenState extends State<SplashScreen> {
               MaterialPageRoute(builder: (context) => ShelterScreen()));
         } else if (role == "pet") {
           Navigator.pushReplacement(
-              context, MaterialPageRoute(builder: (context) => PetNav()));
+              context, MaterialPageRoute(builder: (context) => Home()));
         }
       }
     });
