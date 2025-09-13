@@ -9,10 +9,9 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:pet_care/consts/colors.dart';
 import 'package:pet_care/consts/firebase_consts.dart';
-import 'package:pet_care/consts/styles.dart';
 import 'package:pet_care/screen/petOwnerDashboard/petHome/petScreen.dart';
-import 'package:pet_care/screen/petOwnerDashboard/petOwnerWidgets/petCustomForm.dart';
-import 'package:pet_care/screen/petOwnerDashboard/petOwnerWidgets/petDropdown.dart';
+
+import 'package:pet_care/screen/widgets/comonTextField.dart';
 import 'package:pet_care/services/petOwnerServices/petOwnerServices.dart';
 import 'package:pet_care/services/validationServices/validation_services.dart';
 
@@ -35,18 +34,30 @@ class _PetUpdatesState extends State<PetUpdates> {
   Uint8List? profileImageWeb;
   String? profileImagePath;
   final _formKey = GlobalKey<FormState>();
+  final List<String> breeds = ["Dog", "Cat", "Bird", "Rabbit", "Other"];
+  String? selectedBreed;
+  String? selectedGender;
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     setState(() {});
 
     petController.petNameController.text = widget.petData["pet_name"];
     petController.petAgeController.text = widget.petData["pet_age"];
     petController.petGenderController.text = widget.petData["pet_gender"];
-    petController.petBreadController.text = widget.petData["pet_bread"];
     petController.petSpeciesController.text = widget.petData["pet_species"];
+    selectedBreed = widget.petData["pet_bread"];
+    selectedGender = widget.petData["pet_gender"];
+
+    if (widget.petData["pet_image"] != null) {
+      try {
+        Uint8List bytes = base64Decode(widget.petData["pet_image"]);
+        profileImageWeb = bytes;
+      } catch (e) {
+        print("Failed to load animal image: $e");
+      }
+    }
   }
 
   @override
@@ -54,16 +65,17 @@ class _PetUpdatesState extends State<PetUpdates> {
     return Scaffold(
       backgroundColor: Colors.deepPurple[900],
       appBar: AppBar(
-        iconTheme: const IconThemeData(color: whiteColor),
+        backgroundColor: Colors.deepPurple,
         title: const Text(
-          'Update Pets',
-          style: TextStyle(fontSize: 16.0, color: whiteColor),
+          "Update Pet",
+          style: TextStyle(color: Colors.white),
         ),
+        iconTheme: const IconThemeData(color: Colors.white),
         actions: [
           isloading
               ? const Padding(
                   padding: EdgeInsets.all(12.0),
-                  child: CircularProgressIndicator(color: whiteColor),
+                  child: CircularProgressIndicator(color: Colors.white),
                 )
               : OutlinedButton(
                   onPressed: () {
@@ -72,118 +84,150 @@ class _PetUpdatesState extends State<PetUpdates> {
                     }
                   },
                   child: const Text(
-                    'Update Pets',
+                    'Update Pet',
                     style: TextStyle(color: whiteColor),
                   ),
                 ),
         ],
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(12.0),
-        child: SingleChildScrollView(
-          child: Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                PetCustomTextField(
-                    label: 'Pet Name',
-                    hint: 'Enter Pet Name',
-                    ispass: false,
-                    controller: petController.petNameController,
-                    validator: validatePetName),
-                const SizedBox(height: 10),
-                PetCustomTextField(
-                    label: 'Pet Age',
-                    hint: 'Enter Pet Age',
-                    ispass: false,
-                    controller: petController.petAgeController,
-                    validator: validatePetAge),
-                const SizedBox(height: 10),
-                Row(
-                  children: [
-                    Expanded(
-                      child: PetCustomTextField(
-                          label: 'Pet Bread',
-                          hint: 'Enter Pet Bread',
-                          ispass: false,
-                          controller: petController.petBreadController,
-                          validator: validatePetBreed),
-                    ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: PetCustomTextField(
-                          label: 'Pet Species',
-                          hint: 'Enter Pet Specied',
-                          ispass: false,
-                          controller: petController.petSpeciesController,
-                          validator: validatePetSpecies),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 10),
-                petDropdown(
-                  "Gender",
-                  petController.genderList,
-                  petController.slectedGender,
-                  (value) {
-                    setState(() {
-                      petController.slectedGender = value;
-                    });
-                  },
-                ),
-                const SizedBox(
-                  height: 20,
-                ),
-                Center(
-                  child: GestureDetector(
-                    onTap: updateImage,
-                    child: Container(
-                      width: 100,
-                      height: 100,
-                      decoration: BoxDecoration(
-                        border: Border.all(color: whiteColor),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: profileImageWeb != null
-                          ? ClipRRect(
-                              borderRadius: BorderRadius.circular(10),
-                              child: Image.memory(
-                                profileImageWeb!,
-                                width: 100,
-                                height: 100,
-                                fit: BoxFit.cover,
-                              ),
-                            )
-                          : profileImagePath != null
-                              ? ClipRRect(
-                                  borderRadius: BorderRadius.circular(10),
-                                  child: Image.file(
-                                    File(profileImagePath!),
-                                    width: 100,
-                                    height: 100,
-                                    fit: BoxFit.cover,
-                                  ),
-                                )
-                              : Image.memory(
-                                  base64Decode(widget.petData['pet_image']),
-                                  width: 100,
-                                  height: 100,
-                                  fit: BoxFit.cover,
-                                ),
-                    ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
+        child: Form(
+          key: _formKey,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: Image.asset(
+                    'assets/images/pet123.png',
+                    fit: BoxFit.cover,
+                    width: MediaQuery.of(context).size.width * 0.7,
+                    height: 140,
                   ),
                 ),
-                const SizedBox(height: 10),
-                const Text(
-                  'Choose Pet Image',
-                  style: TextStyle(color: whiteColor, fontFamily: bold),
+              ),
+              const SizedBox(height: 20),
+              Center(
+                child: Text(
+                  "Update Pet Details",
+                  style: const TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                    color: whiteColor,
+                  ),
                 ),
-                const SizedBox(height: 10),
-              ],
-            ),
+              ),
+              const SizedBox(height: 20),
+              buildTextField(
+                  "Pet Name", petController.petNameController, validatePetName),
+              const SizedBox(height: 10),
+              buildTextField("Species", petController.petSpeciesController,
+                  validatePetSpecies),
+              const SizedBox(height: 10),
+              Row(
+                children: [
+                  Expanded(
+                    child: buildTextField("Age (yrs)",
+                        petController.petAgeController, validatePetAge),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                      child: DropdownButtonFormField<String>(
+                    value:
+                        breeds.contains(selectedBreed) ? selectedBreed : null,
+                    dropdownColor: Colors.deepPurple[700],
+                    decoration: _dropdownDecoration("Breed"),
+                    items: breeds.map((breed) {
+                      return DropdownMenuItem(
+                        value: breed,
+                        child: Text(breed,
+                            style: const TextStyle(color: Colors.white)),
+                      );
+                    }).toList(),
+                    onChanged: (val) {
+                      setState(() {
+                        selectedBreed = val;
+                      });
+                    },
+                  )),
+                ],
+              ),
+              const SizedBox(height: 12),
+              DropdownButtonFormField<String>(
+                value: selectedGender,
+                dropdownColor: Colors.deepPurple[700],
+                decoration: _dropdownDecoration("Gender"),
+                items: ["Male", "Female"].map((gender) {
+                  return DropdownMenuItem(
+                    value: gender,
+                    child: Text(gender,
+                        style: const TextStyle(color: Colors.white)),
+                  );
+                }).toList(),
+                onChanged: (val) {
+                  setState(() {
+                    selectedGender = val;
+                  });
+                },
+              ),
+              const SizedBox(height: 20),
+              const Text(
+                'Choose Pet Image',
+                style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                    color: Colors.white),
+              ),
+              const SizedBox(height: 10),
+              Center(
+                child: GestureDetector(
+                  onTap: () => updateImage(),
+                  child: Container(
+                    width: 120,
+                    height: 120,
+                    decoration: BoxDecoration(
+                      border: Border.all(color: Colors.white, width: 2),
+                      borderRadius: BorderRadius.circular(12),
+                      color: Colors.deepPurple[200],
+                    ),
+                    child: profileImageWeb != null
+                        ? Image.memory(profileImageWeb!, fit: BoxFit.cover)
+                        : profileImagePath != null
+                            ? Image.file(File(profileImagePath!),
+                                fit: BoxFit.cover)
+                            : const Icon(Icons.camera_alt,
+                                color: Colors.white, size: 40),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 10),
+              const Center(
+                child: Text(
+                  'First image will be your display image',
+                  style: TextStyle(color: Colors.white70),
+                ),
+              ),
+              const SizedBox(height: 20),
+            ],
           ),
         ),
+      ),
+    );
+  }
+
+  InputDecoration _dropdownDecoration(String label) {
+    return InputDecoration(
+      labelText: label,
+      labelStyle: const TextStyle(color: whiteColor),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: const BorderSide(color: whiteColor),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: const BorderSide(color: Colors.amber),
       ),
     );
   }
@@ -217,13 +261,13 @@ class _PetUpdatesState extends State<PetUpdates> {
       await petadd.update({
         "pet_id": petadd.id,
         "owner_id": user.uid,
-        'pet_image': base64image,
-        'pet_wishlist': FieldValue.arrayUnion([]),
-        'pet_name': petController.petNameController.text,
-        'pet_age': petController.petAgeController.text,
-        'pet_gender': petController.slectedGender,
-        'pet_species': petController.petSpeciesController.text,
-        'pet_bread': petController.petBreadController.text,
+        "pet_image": base64image,
+        "pet_wishlist": FieldValue.arrayUnion([]),
+        "pet_name": petController.petNameController.text,
+        "pet_age": petController.petAgeController.text,
+        "pet_gender": selectedGender,
+        "pet_species": petController.petSpeciesController.text,
+        "pet_bread": selectedBreed,
       });
 
       Navigator.push(

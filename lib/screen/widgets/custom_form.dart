@@ -1,40 +1,31 @@
 import 'package:flutter/material.dart';
 
-Widget CustomTextField({String? label, String? hint, controller,ispass,validator}) {
-  return Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      Text(
-        label!,
-        style: const TextStyle(
-          color: Colors.black,
-          fontSize: 14,
-        ),
+Widget CustomTextField({
+  required TextEditingController controller,
+  required String hint,
+  bool obscure = false,
+  TextInputType keyboardType = TextInputType.text,
+}) {
+  return Container(
+    padding: const EdgeInsets.all(10),
+    decoration: const BoxDecoration(
+      border: Border(bottom: BorderSide(color: Colors.grey)),
+    ),
+    child: TextFormField(
+      controller: controller,
+      obscureText: obscure,
+      keyboardType: keyboardType,
+      validator: (value) {
+        if (value == null || value.isEmpty) {
+          return "$hint cannot be empty";
+        }
+        return null;
+      },
+      decoration: InputDecoration(
+        border: InputBorder.none,
+        hintText: hint,
+        hintStyle: const TextStyle(color: Colors.grey),
       ),
-      const SizedBox(
-        height: 5,
-      ),
-      TextFormField(
-        validator: validator,
-        obscureText: ispass ,
-          controller: controller,
-          decoration: InputDecoration(
-              hintStyle:  TextStyle(
-                color: Colors.grey[400],
-                fontSize: 14
-              ),
-              // prefixIcon: const Icon(Icons.email),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(5),
-              ),  
-              hintText: hint,
-              isDense: true,
-              // filled: true,
-              focusedBorder: const OutlineInputBorder(
-                  borderSide: BorderSide(color: Colors.redAccent)))),
-      SizedBox(
-        height: 10,
-      )
-    ],
+    ),
   );
 }

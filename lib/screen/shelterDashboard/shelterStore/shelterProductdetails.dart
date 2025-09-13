@@ -3,8 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:pet_care/consts/colors.dart';
 import 'package:pet_care/consts/firebase_consts.dart';
-import 'package:pet_care/screen/petOwnerDashboard/petHome/petUpdates.dart';
-import 'package:pet_care/screen/shelterDashboard/shelterScreen.dart';
 import 'package:pet_care/screen/shelterDashboard/shelterStore/addProduct.dart';
 import 'package:pet_care/screen/shelterDashboard/shelterStore/updateShelterProduct.dart';
 import 'package:pet_care/services/authServices/authentication.dart';
@@ -26,26 +24,13 @@ class _ShelterProductDetailsState extends State<ShelterProductDetails> {
       backgroundColor: Colors.grey[100],
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          Navigator.pushReplacement(
+          Navigator.push(
             context,
             MaterialPageRoute(builder: (context) => const AddProduct()),
           );
         },
         backgroundColor: Colors.deepPurple[900],
         child: const Icon(Icons.add, color: whiteColor),
-      ),
-      appBar: AppBar(
-        backgroundColor: Colors.deepPurple[900],
-        title: const Text(
-          "My Products",
-          style: TextStyle(color: whiteColor, fontWeight: FontWeight.bold),
-        ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.logout, color: whiteColor),
-            onPressed: () => authentication.logOut(context),
-          ),
-        ],
       ),
       body: StreamBuilder<QuerySnapshot>(
         stream: Firestoreservices.getproductByshelter(currentUser!.uid),
@@ -123,7 +108,7 @@ class _ShelterProductDetailsState extends State<ShelterProductDetails> {
                             ),
                           );
                           break;
-                        case 1: // Delete
+                        case 1:
                           await Firestoreservices.deletepet(prod.id);
                           break;
                       }

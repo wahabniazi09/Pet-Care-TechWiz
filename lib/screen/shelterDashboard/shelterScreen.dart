@@ -1,13 +1,15 @@
-import 'dart:convert';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:pet_care/consts/colors.dart';
-import 'package:pet_care/consts/firebase_consts.dart';
 import 'package:pet_care/screen/shelterDashboard/addoptAnimal/addAnimal.dart';
+import 'package:pet_care/screen/shelterDashboard/blogScreen/addblog.dart';
+import 'package:pet_care/screen/shelterDashboard/blogScreen/blogHome.dart';
+import 'package:pet_care/screen/shelterDashboard/shelterHome/shelterHomePage.dart';
+import 'package:pet_care/screen/shelterDashboard/shelterProfile/shelterProfile.dart';
 import 'package:pet_care/screen/shelterDashboard/shelterStore/addProduct.dart';
 import 'package:pet_care/screen/shelterDashboard/shelterStore/shelterProductdetails.dart';
+import 'package:pet_care/screen/shelterDashboard/shelterWidgets/animalPage.dart';
 import 'package:pet_care/services/authServices/authentication.dart';
-import 'package:pet_care/services/firestoreServices/firestoreServices.dart';
 
 class ShelterScreen extends StatefulWidget {
   const ShelterScreen({super.key});
@@ -18,94 +20,121 @@ class ShelterScreen extends StatefulWidget {
 
 class _ShelterScreenState extends State<ShelterScreen> {
   final Authentication authentication = Authentication();
+  int _currentIndex = 0;
+
+  final List<Widget> _pages = [
+    const HomePage(),
+    const AnimalsPage(),
+    ShelterProductDetails(),
+    const BlogHome(),
+    const ProfilePage(),
+  ];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.grey[100],
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => const AddAnimal()),
-          );
+      appBar: AppBar(
+        title: Text(
+          _getAppBarTitle(),
+          style: const TextStyle(fontWeight: FontWeight.bold),
+        ),
+        backgroundColor: Colors.deepPurple[900],
+        foregroundColor: whiteColor,
+      ),
+      body: _pages[_currentIndex],
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: _currentIndex,
+        onTap: (index) {
+          setState(() {
+            _currentIndex = index;
+          });
         },
         backgroundColor: Colors.deepPurple[900],
-        child: const Icon(Icons.add, color: whiteColor),
-      ),
-      appBar: AppBar(
-        title: const Text("Shelter Dashboard"),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.logout),
-            onPressed: () => authentication.logOut(context),
+        selectedItemColor: whiteColor,
+        unselectedItemColor: Colors.grey[400],
+        type: BottomNavigationBarType.fixed,
+        items: const [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home),
+            label: 'Home',
           ),
-          IconButton(
-              onPressed: () {
-                Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => ShelterProductDetails()));
-              },
-              icon: Icon(Icons.add))
+          BottomNavigationBarItem(
+            icon: Icon(Icons.pets),
+            label: 'Animals',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.shopping_bag),
+            label: 'Products',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.post_add),
+            label: 'Blogs',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.person),
+            label: 'Profile',
+          ),
         ],
       ),
-      body: StreamBuilder<QuerySnapshot>(
-        stream: Firestoreservices.getAnimalbyShelterOwner(currentUser!.uid),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          }
-          if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-            return const Center(
-              child: Text(
-                "No animals available for adoption yet.",
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
-              ),
-            );
-          }
-          var animals = snapshot.data!.docs;
-          return ListView.builder(
-            itemCount: animals.length,
-            itemBuilder: (context, index) {
-              var animal = animals[index];
-              return Card(
-                margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: ListTile(
-                  leading: animal['animal_image'] != null
-                      ? CircleAvatar(
-                          backgroundImage: MemoryImage(
-                            const Base64Decoder()
-                                .convert(animal['animal_image']),
-                          ),
-                        )
-                      : const CircleAvatar(
-                          child: Icon(Icons.pets),
-                        ),
-                  title: Text(
-                    animal['animal_name'] ?? 'Unknown',
-                    style: const TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                  subtitle: Text(
-                      "Age: ${animal['animal_age']}, Gender: ${animal['animal_gender']}"),
-                  trailing: Text(
-                    animal['adoption_status'] ?? 'Available',
-                    style: TextStyle(
-                      color: (animal['adoption_status'] == 'Adopted')
-                          ? Colors.red
-                          : Colors.green,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-              );
-            },
-          );
-        },
-      ),
+      floatingActionButton: _buildFloatingActionButton(),
     );
+  }
+
+  String _getAppBarTitle() {
+    switch (_currentIndex) {
+      case 0:
+        return "Home";
+      case 1:
+        return "Animals";
+      case 2:
+        return "Products";
+      case 3:
+        return "Blogs";
+      case 4:
+        return "Profile";
+      default:
+        return "Dashboard";
+    }
+  }
+
+  Widget? _buildFloatingActionButton() {
+    switch (_currentIndex) {
+      case 1:
+        return FloatingActionButton(
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const AddAnimal()),
+            );
+          },
+          backgroundColor: Colors.deepPurple[900],
+          child: const Icon(Icons.add, color: whiteColor),
+        );
+      case 2:
+        return FloatingActionButton(
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => AddProduct()),
+            );
+          },
+          backgroundColor: Colors.deepPurple[900],
+          child: const Icon(Icons.add, color: whiteColor),
+        );
+      case 3:
+        return FloatingActionButton(
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const AddBlogScreen()),
+            );
+          },
+          backgroundColor: Colors.deepPurple[900],
+          child: const Icon(Icons.add, color: whiteColor),
+        );
+      default:
+        return null;
+    }
   }
 }

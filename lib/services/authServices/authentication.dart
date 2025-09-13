@@ -62,4 +62,12 @@ class Authentication {
     Navigator.pushReplacement(
         context, MaterialPageRoute(builder: (context) => Home()));
   }
+
+  Future<void> resetPassword(String email) async {
+    try {
+      await auth.sendPasswordResetEmail(email: email);
+    } catch (e) {
+      rethrow; // Rethrow the error so that we can handle it in the UI
+    }
+  }
 }

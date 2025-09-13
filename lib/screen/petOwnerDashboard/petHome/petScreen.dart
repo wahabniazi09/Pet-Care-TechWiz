@@ -24,7 +24,7 @@ class _PetScreenState extends State<PetScreen> {
       backgroundColor: Colors.grey[100],
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          Navigator.pushReplacement(
+          Navigator.push(
             context,
             MaterialPageRoute(builder: (context) => const AddPet()),
           );

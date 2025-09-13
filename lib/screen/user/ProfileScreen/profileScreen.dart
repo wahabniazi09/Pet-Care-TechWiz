@@ -21,7 +21,7 @@ class Profilescreen extends StatelessWidget {
               child: Ownbutton(
                 onTap: () {
                   Navigator.pushReplacement(context,
-                      MaterialPageRoute(builder: (context) => Loginscreen()));
+                      MaterialPageRoute(builder: (context) => LoginScreen()));
                 },
                 title: 'Login',
                 width: MediaQuery.of(context).size.width - 20,

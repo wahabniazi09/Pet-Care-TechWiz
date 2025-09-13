@@ -121,3 +121,43 @@ String? validatePetGender(String? value) {
   }
   return null;
 }
+
+String? validateProductName(String? value) {
+  if (value == null || value.isEmpty) {
+    return "Product Name is required";
+  }
+  return null;
+}
+
+String? validateProductDescription(String? value) {
+  if (value == null || value.isEmpty) {
+    return "Product Description is required";
+  }
+  return null;
+}
+
+String? validatePrice(String? value) {
+  if (value == null || value.isEmpty) {
+    return "Enter Product Price";
+  }
+  if (double.tryParse(value) == null || double.parse(value) <= 0) {
+    return "Enter a valid price";
+  }
+  if (value.length > 10) {
+    return "Price cannot exceed 4 digits";
+  }
+  return null;
+}
+
+String? validateQuantity(String? value) {
+  if (value == null || value.isEmpty) {
+    return "Enter Quantity";
+  }
+  if (int.tryParse(value) == null || int.parse(value) <= 0) {
+    return "Enter a valid quantity";
+  }
+  if (value.length > 4) {
+    return "Quantity cannot exceed 4 digits";
+  }
+  return null;
+}

@@ -1,5 +1,3 @@
-// ignore_for_file: unnecessary_null_comparison
-
 import 'dart:convert';
 import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -7,8 +5,11 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:pet_care/consts/colors.dart';
 import 'package:pet_care/consts/firebase_consts.dart';
 import 'package:pet_care/screen/shelterDashboard/shelterScreen.dart';
+import 'package:pet_care/screen/widgets/comonTextField.dart';
+import 'package:pet_care/services/validationServices/validation_services.dart';
 
 class AddProduct extends StatefulWidget {
   const AddProduct({super.key});
@@ -38,11 +39,12 @@ class _AddProductState extends State<AddProduct> {
     return Scaffold(
       backgroundColor: Colors.deepPurple[900],
       appBar: AppBar(
-        iconTheme: const IconThemeData(color: Colors.white),
+        backgroundColor: Colors.deepPurple,
         title: const Text(
-          'Add Product',
-          style: TextStyle(fontSize: 16.0, color: Colors.white),
+          "Add Product",
+          style: TextStyle(color: Colors.white),
         ),
+        iconTheme: const IconThemeData(color: Colors.white),
         actions: [
           isloading
               ? const Padding(
@@ -51,124 +53,185 @@ class _AddProductState extends State<AddProduct> {
                 )
               : OutlinedButton(
                   onPressed: () {
-                    if (_formKey.currentState!.validate()) {
-                      addData(context);
-                    }
+                    addData(context);
                   },
                   child: const Text(
                     'Add Product',
-                    style: TextStyle(color: Colors.white),
+                    style: TextStyle(color: whiteColor),
                   ),
                 ),
         ],
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(12.0),
-        child: SingleChildScrollView(
-          child: Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                buildTextField("Product Name", pnameController),
-                const SizedBox(height: 10),
-                buildTextField("Product Description", pdescController),
-                const SizedBox(height: 10),
-                Row(
-                  children: [
-                    Expanded(child: buildTextField("Price", ppriceController)),
-                    const SizedBox(width: 10),
-                    Expanded(
-                        child: buildTextField("Quantity", pquantityController)),
-                  ],
-                ),
-                const SizedBox(height: 10),
-                DropdownButtonFormField<String>(
-                  value: selectedCategory,
-                  hint: const Text("Select Category"),
-                  items: categoryList
-                      .map((cat) =>
-                          DropdownMenuItem(value: cat, child: Text(cat)))
-                      .toList(),
-                  onChanged: (value) {
-                    setState(() {
-                      selectedCategory = value;
-                      selectedSubCategory = null;
-                      subCategoryList = getSubCategories(value!);
-                    });
-                  },
-                  validator: (value) =>
-                      value == null ? "Please select category" : null,
-                ),
-                const SizedBox(height: 10),
-                DropdownButtonFormField<String>(
-                  value: selectedSubCategory,
-                  hint: const Text("Select Sub Category"),
-                  items: subCategoryList
-                      .map((sub) =>
-                          DropdownMenuItem(value: sub, child: Text(sub)))
-                      .toList(),
-                  onChanged: (value) {
-                    setState(() {
-                      selectedSubCategory = value;
-                    });
-                  },
-                  validator: (value) =>
-                      value == null ? "Please select sub-category" : null,
-                ),
-                const SizedBox(height: 15),
-                const Text(
-                  'Choose Product Image',
-                  style: TextStyle(
-                      color: Colors.white, fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 10),
-                Center(
-                  child: GestureDetector(
-                    onTap: () => changeImage(),
-                    child: Container(
-                      width: 120,
-                      height: 120,
-                      decoration: BoxDecoration(
-                        border: Border.all(color: Colors.white),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: profileImageWeb != null
-                          ? Image.memory(profileImageWeb!, fit: BoxFit.cover)
-                          : profileImagePath != null
-                              ? Image.file(File(profileImagePath!),
-                                  fit: BoxFit.cover)
-                              : const Icon(Icons.camera_alt,
-                                  color: Colors.white, size: 40),
-                    ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
+        child: Form(
+          key: _formKey,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: Image.asset(
+                    'assets/images/pet123.png',
+                    fit: BoxFit.cover,
+                    width: MediaQuery.of(context).size.width * 0.7,
+                    height: 140,
                   ),
                 ),
-                const SizedBox(height: 10),
-                const Text(
-                  'First image will be your display image',
-                  style: TextStyle(color: Colors.grey),
+              ),
+              const SizedBox(height: 20),
+
+              Center(
+                child: Text(
+                  "Product Details",
+                  style: TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                    color: whiteColor,
+                  ),
                 ),
-              ],
-            ),
+              ),
+              const SizedBox(height: 20),
+
+              // No validation
+              buildTextField(
+                  "Product Name", pnameController, validateProductName),
+              const SizedBox(height: 12),
+              buildTextField("Product Description", pdescController,
+                  validateProductDescription),
+              const SizedBox(height: 12),
+
+              Row(
+                children: [
+                  Expanded(
+                    child: buildTextField(
+                        "Price", ppriceController, validatePrice,
+                        inputType: TextInputType.number),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: buildTextField(
+                        "Quantity", pquantityController, validateQuantity,
+                        inputType: TextInputType.number),
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: 12),
+              DropdownButtonFormField<String>(
+                value: selectedCategory,
+                decoration: InputDecoration(
+                  labelText: "Select Category",
+                  labelStyle: const TextStyle(color: Colors.white),
+                  enabledBorder: OutlineInputBorder(
+                    borderSide: const BorderSide(color: Colors.white),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderSide: const BorderSide(color: Colors.yellow),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                style: const TextStyle(color: Colors.white),
+                dropdownColor: Colors.deepPurple[800],
+                items: categoryList
+                    .map((cat) => DropdownMenuItem(
+                          value: cat,
+                          child: Text(cat,
+                              style: const TextStyle(color: Colors.white)),
+                        ))
+                    .toList(),
+                onChanged: (value) {
+                  setState(() {
+                    selectedCategory = value;
+                    selectedSubCategory = null;
+                    subCategoryList = getSubCategories(value!);
+                  });
+                },
+              ),
+
+              const SizedBox(height: 12),
+              DropdownButtonFormField<String>(
+                value: selectedSubCategory,
+                decoration: InputDecoration(
+                  labelText: "Select Sub Category",
+                  labelStyle: const TextStyle(color: Colors.white),
+                  enabledBorder: OutlineInputBorder(
+                    borderSide: const BorderSide(color: Colors.white),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderSide: const BorderSide(color: Colors.yellow),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                style: const TextStyle(color: Colors.white),
+                dropdownColor: Colors.deepPurple[800],
+                items: subCategoryList
+                    .map((sub) => DropdownMenuItem(
+                          value: sub,
+                          child: Text(sub,
+                              style: const TextStyle(color: Colors.white)),
+                        ))
+                    .toList(),
+                onChanged: (value) {
+                  setState(() {
+                    selectedSubCategory = value;
+                  });
+                },
+              ),
+
+              const SizedBox(height: 20),
+              const Text(
+                'Choose Product Image',
+                style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                    color: Colors.white),
+              ),
+              const SizedBox(height: 10),
+
+              Center(
+                child: GestureDetector(
+                  onTap: () => changeImage(),
+                  child: Container(
+                    width: 120,
+                    height: 120,
+                    decoration: BoxDecoration(
+                      border: Border.all(color: Colors.white, width: 2),
+                      borderRadius: BorderRadius.circular(12),
+                      color: Colors.deepPurple[200],
+                    ),
+                    child: profileImageWeb != null
+                        ? ClipRRect(
+                            borderRadius: BorderRadius.circular(12),
+                            child: Image.memory(profileImageWeb!,
+                                fit: BoxFit.cover),
+                          )
+                        : profileImagePath != null
+                            ? ClipRRect(
+                                borderRadius: BorderRadius.circular(12),
+                                child: Image.file(File(profileImagePath!),
+                                    fit: BoxFit.cover),
+                              )
+                            : const Icon(Icons.camera_alt,
+                                color: Colors.white, size: 40),
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 10),
+              const Center(
+                child: Text(
+                  'First image will be your display image',
+                  style: TextStyle(color: Colors.white70),
+                ),
+              ),
+              const SizedBox(height: 20),
+            ],
           ),
         ),
-      ),
-    );
-  }
-
-  Widget buildTextField(String label, TextEditingController controller) {
-    return TextFormField(
-      controller: controller,
-      validator: (value) =>
-          value == null || value.isEmpty ? "$label required" : null,
-      style: const TextStyle(color: Colors.white),
-      decoration: InputDecoration(
-        labelText: label,
-        labelStyle: const TextStyle(color: Colors.white),
-        enabledBorder:
-            OutlineInputBorder(borderSide: BorderSide(color: Colors.white)),
-        focusedBorder:
-            OutlineInputBorder(borderSide: BorderSide(color: Colors.yellow)),
       ),
     );
   }
@@ -210,8 +273,8 @@ class _AddProductState extends State<AddProduct> {
         'created_at': DateTime.now(),
       });
 
-      Navigator.pushReplacement(
-          context, MaterialPageRoute(builder: (context) => ShelterScreen()));
+      Navigator.pushReplacement(context,
+          MaterialPageRoute(builder: (context) => const ShelterScreen()));
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
