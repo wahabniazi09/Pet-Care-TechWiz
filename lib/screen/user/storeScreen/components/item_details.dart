@@ -2,8 +2,8 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:pet_care/consts/theme_constant.dart';
 import 'package:pet_care/screen/user/ProfileScreen/cartScreen.dart';
-import 'package:pet_care/consts/colors.dart';
 import 'package:pet_care/consts/styles.dart';
 
 class ItemDetails extends StatefulWidget {
@@ -23,7 +23,10 @@ class _ItemDetailsState extends State<ItemDetails> {
     final User? user = FirebaseAuth.instance.currentUser;
     if (user == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Please login to add items to cart")),
+        SnackBar(
+          content: Text("Please login to add items to cart"),
+          backgroundColor: AppTheme.primaryColor,
+        ),
       );
       return;
     }
@@ -52,17 +55,31 @@ class _ItemDetailsState extends State<ItemDetails> {
     }
 
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text("Added $quantity item(s) to cart")),
+      SnackBar(
+        content: Text("Added $quantity item(s) to cart"),
+        backgroundColor: AppTheme.primaryColor,
+      ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isSmallScreen = screenWidth < 600;
     var product = widget.data;
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.title, style: const TextStyle(fontFamily: bold)),
+        title: Text(
+          widget.title, 
+          style: TextStyle(
+            fontFamily: bold,
+            fontSize: isSmallScreen ? 18 : 20,
+          ),
+        ),
+        backgroundColor: Colors.white,
+        foregroundColor: AppTheme.primaryColor,
+        elevation: 1,
         actions: [
           IconButton(
             onPressed: () {
@@ -71,7 +88,10 @@ class _ItemDetailsState extends State<ItemDetails> {
                 MaterialPageRoute(builder: (_) => const CartScreen()),
               );
             },
-            icon: const Icon(Icons.shopping_cart),
+            icon: Icon(
+              Icons.shopping_cart,
+              color: AppTheme.primaryColor,
+            ),
           ),
         ],
       ),
@@ -79,94 +99,152 @@ class _ItemDetailsState extends State<ItemDetails> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const SizedBox(height: 20),
+            SizedBox(height: isSmallScreen ? 16 : 20),
             if (product["p_image"] != null &&
                 product["p_image"].toString().isNotEmpty)
-              Image.memory(base64Decode(product["p_image"]),
-                  width: double.infinity, height: 250, fit: BoxFit.cover)
+              Image.memory(
+                base64Decode(product["p_image"]),
+                width: double.infinity, 
+                height: isSmallScreen ? 200 : 250, 
+                fit: BoxFit.cover,
+              )
             else
               Container(
-                  height: 250,
-                  color: Colors.grey,
-                  child: const Icon(Icons.image, size: 80)),
-            const SizedBox(height: 20),
+                height: isSmallScreen ? 200 : 250,
+                color: Colors.grey[200],
+                child: Icon(
+                  Icons.shopping_bag, 
+                  size: 60, 
+                  color: Colors.grey[400],
+                ),
+              ),
+            SizedBox(height: isSmallScreen ? 16 : 20),
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12),
+              padding: EdgeInsets.symmetric(horizontal: isSmallScreen ? 16 : 20),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(product["p_name"] ?? "No name",
-                      style: const TextStyle(
-                          fontSize: 20,
-                          fontFamily: semibold,
-                          color: Colors.black87)),
-                  const SizedBox(height: 6),
-                  Text("Rs: ${product["p_price"] ?? 0}",
-                      style: const TextStyle(
-                          fontSize: 18, fontFamily: bold, color: redColor)),
+                  Text(
+                    product["p_name"] ?? "No name",
+                    style: TextStyle(
+                      fontSize: isSmallScreen ? 18 : 20,
+                      fontFamily: semibold,
+                      color: Colors.black87,
+                    ),
+                  ),
+                  SizedBox(height: isSmallScreen ? 4 : 6),
+                  Text(
+                    "Rs: ${product["p_price"] ?? 0}",
+                    style: TextStyle(
+                      fontSize: isSmallScreen ? 16 : 18,
+                      fontFamily: bold,
+                      color: AppTheme.primaryColor,
+                    ),
+                  ),
                 ],
               ),
             ),
-            const SizedBox(height: 20),
+            SizedBox(height: isSmallScreen ? 16 : 20),
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12),
+              padding: EdgeInsets.symmetric(horizontal: isSmallScreen ? 16 : 20),
               child: Row(
                 children: [
-                  const Text("Quantity:",
-                      style: TextStyle(fontFamily: semibold)),
-                  const SizedBox(width: 12),
+                  Text(
+                    "Quantity:",
+                    style: TextStyle(
+                      fontFamily: semibold,
+                      fontSize: isSmallScreen ? 14 : 16,
+                    ),
+                  ),
+                  SizedBox(width: isSmallScreen ? 8 : 12),
                   IconButton(
-                      onPressed: () {
-                        if (quantity > 1) setState(() => quantity--);
-                      },
-                      icon: const Icon(Icons.remove)),
-                  Text("$quantity",
-                      style: const TextStyle(
-                          fontSize: 16,
-                          fontFamily: bold,
-                          color: Colors.black87)),
+                    onPressed: () {
+                      if (quantity > 1) setState(() => quantity--);
+                    },
+                    icon: Icon(
+                      Icons.remove,
+                      color: AppTheme.primaryColor,
+                    ),
+                  ),
+                  Text(
+                    "$quantity",
+                    style: TextStyle(
+                      fontSize: isSmallScreen ? 14 : 16,
+                      fontFamily: bold,
+                      color: Colors.black87,
+                    ),
+                  ),
                   IconButton(
-                      onPressed: () {
-                        if (quantity < (product["p_quantity"] ?? 100))
-                          setState(() => quantity++);
-                      },
-                      icon: const Icon(Icons.add)),
+                    onPressed: () {
+                      if (quantity < (product["p_quantity"] ?? 100))
+                        setState(() => quantity++);
+                    },
+                    icon: Icon(
+                      Icons.add,
+                      color: AppTheme.primaryColor,
+                    ),
+                  ),
                 ],
               ),
             ),
-            const SizedBox(height: 20),
+            SizedBox(height: isSmallScreen ? 16 : 20),
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12),
+              padding: EdgeInsets.symmetric(horizontal: isSmallScreen ? 16 : 20),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text("Description",
-                      style: TextStyle(fontFamily: bold, fontSize: 16)),
-                  const SizedBox(height: 8),
-                  Text(product["p_desc"] ?? "No description provided.",
-                      style: const TextStyle(
-                          fontFamily: semibold, color: Colors.black54)),
+                  Text(
+                    "Description",
+                    style: TextStyle(
+                      fontFamily: bold, 
+                      fontSize: isSmallScreen ? 14 : 16
+                    ),
+                  ),
+                  SizedBox(height: isSmallScreen ? 6 : 8),
+                  Text(
+                    product["p_desc"] ?? "No description provided.",
+                    style: TextStyle(
+                      fontFamily: semibold, 
+                      color: Colors.black54,
+                      fontSize: isSmallScreen ? 13 : 14,
+                    ),
+                  ),
                 ],
               ),
             ),
-            const SizedBox(height: 80),
+            SizedBox(height: isSmallScreen ? 60 : 80),
           ],
         ),
       ),
       bottomNavigationBar: Container(
-        height: 60,
-        margin: const EdgeInsets.all(12),
+        height: isSmallScreen ? 70 : 80,
+        padding: EdgeInsets.all(isSmallScreen ? 12 : 16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey.withOpacity(0.2),
+              blurRadius: 8,
+              offset: const Offset(0, -2),
+            ),
+          ],
+        ),
         child: ElevatedButton(
           style: ElevatedButton.styleFrom(
-            backgroundColor: redColor,
-            shape:
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            backgroundColor: AppTheme.primaryColor,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            padding: EdgeInsets.symmetric(vertical: isSmallScreen ? 12 : 16),
           ),
           onPressed: addToCart,
-          child: const Text(
+          child: Text(
             "Add To Cart",
-            style:
-                TextStyle(fontFamily: bold, fontSize: 16, color: Colors.white),
+            style: TextStyle(
+              fontFamily: bold, 
+              fontSize: isSmallScreen ? 14 : 16, 
+              color: Colors.white
+            ),
           ),
         ),
       ),

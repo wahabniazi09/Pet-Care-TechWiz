@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:pet_care/Animation/FadeAnimation.dart';
 import 'package:pet_care/consts/firebase_consts.dart';
+import 'package:pet_care/consts/theme_constant.dart';
 import 'package:pet_care/screen/login_register_screen/loginScreen.dart';
 import 'package:pet_care/screen/petOwnerDashboard/petHome/petNav.dart';
 import 'package:pet_care/screen/shelterDashboard/shelterScreen.dart';
@@ -9,7 +10,6 @@ import 'package:pet_care/screen/vetDashboard/vetScreen.dart';
 import 'package:pet_care/screen/widgets/custom_form.dart';
 import 'package:pet_care/screen/widgets/snackBar.dart';
 import 'package:pet_care/services/authServices/authentication.dart';
-
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
 
@@ -40,19 +40,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
     phoneController.dispose();
     addressController.dispose();
     super.dispose();
-  }
-
-  // Snackbars
-  void _showSnack(String message, {bool isError = false}) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: isError ? Colors.red : Colors.green,
-        behavior: SnackBarBehavior.floating,
-        margin: const EdgeInsets.all(16),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      ),
-    );
   }
 
  void signUpUser() async {
@@ -111,9 +98,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
   @override
   Widget build(BuildContext context) {
     final width = MediaQuery.of(context).size.width;
+    final isSmallScreen = width < 600;
 
     return Scaffold(
-      appBar: AppBar(),
+      appBar: AppBar(
+        backgroundColor: AppTheme.primaryColor,
+        foregroundColor: Colors.white,
+      ),
       backgroundColor: Colors.white,
       body: SingleChildScrollView(
         child: Form(
@@ -122,12 +113,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
               SizedBox(
-                height: 300,
+                height: isSmallScreen ? 250 : 300,
                 child: Stack(
                   children: <Widget>[
                     Positioned(
                       top: 0,
-                      height: 200,
+                      height: isSmallScreen ? 150 : 200,
                       width: width,
                       child: FadeAnimation(
                         1,
@@ -142,8 +133,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       ),
                     ),
                     Positioned(
-                      top: 45,
-                      height: 400,
+                      top: isSmallScreen ? 30 : 45,
+                      height: isSmallScreen ? 300 : 400,
                       width: width + 15,
                       child: FadeAnimation(
                         1,
@@ -162,7 +153,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
               ),
 
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 40),
+                padding: EdgeInsets.symmetric(horizontal: isSmallScreen ? 30 : 40),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
@@ -171,13 +162,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       const Text(
                         "Register",
                         style: TextStyle(
-                          color: Color.fromRGBO(49, 39, 79, 1),
+                          color: AppTheme.primaryColor,
                           fontWeight: FontWeight.bold,
                           fontSize: 30,
                         ),
                       ),
                     ),
-                    const SizedBox(height: 20),
+                    SizedBox(height: isSmallScreen ? 15 : 20),
 
                     FadeAnimation(
                       1.7,
@@ -187,7 +178,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           color: Colors.white,
                           boxShadow: [
                             BoxShadow(
-                              color: Color.fromRGBO(196, 135, 198, .3),
+                              color: const Color.fromRGBO(196, 135, 198, .3),
                               blurRadius: 20,
                               offset: const Offset(0, 10),
                             ),
@@ -216,9 +207,23 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                     hintStyle: TextStyle(color: Colors.grey),
                                   ),
                                   items: ["vet", "shelter", "pet"].map((role) {
-                                    return DropdownMenuItem(value: role, child: Text(role));
+                                    return DropdownMenuItem(
+                                      value: role, 
+                                      child: Text(
+                                        role.toUpperCase(),
+                                        style: TextStyle(
+                                          color: AppTheme.primaryColor,
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                      ),
+                                    );
                                   }).toList(),
                                   onChanged: (val) => setState(() => selectedRole = val!),
+                                  dropdownColor: Colors.white,
+                                  style: TextStyle(
+                                    color: AppTheme.primaryColor,
+                                    fontWeight: FontWeight.w500,
+                                  ),
                                 ),
                               ),
                             ),
@@ -227,30 +232,37 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       ),
                     ),
 
-                    const SizedBox(height: 20),
+                    SizedBox(height: isSmallScreen ? 15 : 20),
 
                     // Sign Up Button
                     FadeAnimation(
                       1.9,
                       Container(
                         height: 50,
-                        margin: const EdgeInsets.symmetric(horizontal: 60),
+                        margin: EdgeInsets.symmetric(horizontal: isSmallScreen ? 40 : 60),
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(50),
-                          color: const Color.fromRGBO(49, 39, 79, 1),
+                          color: AppTheme.primaryColor,
                         ),
                         child: Center(
                           child: isLoading
                               ? const CircularProgressIndicator(color: Colors.white)
                               : TextButton(
                                   onPressed: signUpUser,
-                                  child: const Text("Sign Up", style: TextStyle(color: Colors.white)),
+                                  child: const Text(
+                                    "Sign Up", 
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
                                 ),
                         ),
                       ),
                     ),
 
-                    const SizedBox(height: 10),
+                    SizedBox(height: isSmallScreen ? 8 : 10),
 
                     FadeAnimation(
                       2,

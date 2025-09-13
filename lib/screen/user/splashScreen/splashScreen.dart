@@ -3,11 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:pet_care/consts/consts.dart';
-<<<<<<< HEAD
-
-=======
 import 'package:pet_care/screen/login_register_screen/loginScreen.dart';
->>>>>>> ade8fa03f446e50a63e2653655b9a79ec54c44d5
 import 'package:pet_care/screen/shelterDashboard/shelterScreen.dart';
 import 'package:pet_care/screen/user/homeScreen/homeNav.dart';
 import 'package:pet_care/screen/vetDashboard/vetScreen.dart';

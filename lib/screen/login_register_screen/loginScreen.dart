@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:pet_care/animation/fadeAnimation.dart';
 import 'package:pet_care/consts/firebase_consts.dart';
+import 'package:pet_care/consts/theme_constant.dart';
 import 'package:pet_care/screen/login_register_screen/ForgetScreen.dart';
 import 'package:pet_care/screen/login_register_screen/registerScreen.dart';
 import 'package:pet_care/screen/shelterDashboard/shelterScreen.dart';
@@ -33,11 +34,12 @@ class _LoginScreenState extends State<LoginScreen> {
     _passwordController.dispose();
     super.dispose();
   }
+
   void _showSnack(String message, {bool isError = false}) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
-        backgroundColor: isError ? Colors.red : Colors.green,
+        backgroundColor: isError ? Colors.red : AppTheme.primaryColor,
         behavior: SnackBarBehavior.floating,
         margin: const EdgeInsets.all(16),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -102,8 +104,13 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     final width = MediaQuery.of(context).size.width;
+    final isSmallScreen = width < 600;
+    
     return Scaffold(
-      appBar: AppBar(),
+      appBar: AppBar(
+        backgroundColor: AppTheme.primaryColor,
+        foregroundColor: Colors.white,
+      ),
       backgroundColor: Colors.white,
       body: SingleChildScrollView(
         child: Column(
@@ -111,12 +118,12 @@ class _LoginScreenState extends State<LoginScreen> {
           children: <Widget>[
             // Background
             SizedBox(
-              height: 400,
+              height: isSmallScreen ? 300 : 400,
               child: Stack(
                 children: <Widget>[
                   Positioned(
                     top: 0,
-                    height: 400,
+                    height: isSmallScreen ? 300 : 400,
                     width: width,
                     child: FadeAnimation(
                       1,
@@ -131,8 +138,8 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ),
                   Positioned(
-                    top: 45,
-                    height: 300,
+                    top: isSmallScreen ? 30 : 45,
+                    height: isSmallScreen ? 250 : 300,
                     width: width + 15,
                     child: FadeAnimation(
                       1,
@@ -151,7 +158,7 @@ class _LoginScreenState extends State<LoginScreen> {
             ),
 
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 40),
+              padding: EdgeInsets.symmetric(horizontal: isSmallScreen ? 30 : 40),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
@@ -160,13 +167,13 @@ class _LoginScreenState extends State<LoginScreen> {
                     const Text(
                       "Login",
                       style: TextStyle(
-                        color: Color.fromRGBO(49, 39, 79, 1),
+                        color: AppTheme.primaryColor,
                         fontWeight: FontWeight.bold,
                         fontSize: 30,
                       ),
                     ),
                   ),
-                  const SizedBox(height: 30),
+                  SizedBox(height: isSmallScreen ? 20 : 30),
 
                   FadeAnimation(
                     1.7,
@@ -200,7 +207,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ),
 
-                  const SizedBox(height: 20),
+                  SizedBox(height: isSmallScreen ? 15 : 20),
 
                   FadeAnimation(
                     1.7,
@@ -214,22 +221,22 @@ class _LoginScreenState extends State<LoginScreen> {
                         },
                         child: const Text(
                           "Forgot Password?",
-                          style: TextStyle(color: Color.fromRGBO(196, 135, 198, 1)),
+                          style: TextStyle(color: AppTheme.secondaryColor),
                         ),
                       ),
                     ),
                   ),
 
-                  const SizedBox(height: 10),
+                  SizedBox(height: isSmallScreen ? 8 : 10),
 
                   FadeAnimation(
                     1.9,
                     Container(
                       height: 50,
-                      margin: const EdgeInsets.symmetric(horizontal: 60),
+                      margin: EdgeInsets.symmetric(horizontal: isSmallScreen ? 40 : 60),
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(50),
-                        color: const Color.fromRGBO(49, 39, 79, 1),
+                        color: AppTheme.primaryColor,
                       ),
                       child: Center(
                         child: isLoading
@@ -245,7 +252,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ),
 
-                  const SizedBox(height: 10),
+                  SizedBox(height: isSmallScreen ? 8 : 10),
 
                   FadeAnimation(
                     2,
