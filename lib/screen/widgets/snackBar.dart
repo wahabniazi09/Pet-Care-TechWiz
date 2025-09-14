@@ -7,15 +7,22 @@ class AppNotifier {
     required String message,
     bool isError = false,
   }) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isSmallScreen = screenWidth < 600;
+    
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(message),
+        content: Text(
+          message,
+          style: TextStyle(fontSize: isSmallScreen ? 14 : 16),
+        ),
         backgroundColor: isError ? Colors.red : Colors.green,
         behavior: SnackBarBehavior.floating,
-        margin: const EdgeInsets.all(12),
+        margin: EdgeInsets.all(isSmallScreen ? 10 : 12),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(10),
+          borderRadius: BorderRadius.circular(isSmallScreen ? 8 : 10),
         ),
+        duration: const Duration(seconds: 3),
       ),
     );
   }
@@ -41,6 +48,12 @@ class AppNotifier {
       case 'wrong-password':
         message = "Incorrect password. Please try again.";
         break;
+      case 'user-disabled':
+        message = "This account has been disabled. Contact support.";
+        break;
+      case 'too-many-requests':
+        message = "Too many attempts. Try again later.";
+        break;
       default:
         message = e.message ?? "Authentication failed. Please try again.";
     }
@@ -49,10 +62,14 @@ class AppNotifier {
   }
 
   static void handleError(BuildContext context, Object error) {
-    showSnack(
-      context,
-      message: "Something went wrong. Please try again.",
-      isError: true,
-    );
+    if (error is FirebaseAuthException) {
+      handleAuthError(context, error);
+    } else {
+      showSnack(
+        context,
+        message: "Something went wrong. Please try again.",
+        isError: true,
+      );
+    }
   }
 }

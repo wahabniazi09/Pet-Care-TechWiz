@@ -36,14 +36,35 @@ class _ShelterProductDetailsState extends State<ShelterProductDetails> {
         stream: Firestoreservices.getproductByshelter(currentUser!.uid),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
+            return const Center(
+              child: CircularProgressIndicator(
+                valueColor: AlwaysStoppedAnimation<Color>(Colors.deepPurple),
+              ),
+            );
           }
 
           if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-            return const Center(
-              child: Text(
-                "No product added yet",
-                style: TextStyle(fontSize: 16, color: Colors.grey),
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.inventory_2_outlined,
+                    size: 80,
+                    color: Colors.grey[400],
+                  ),
+                  const SizedBox(height: 16),
+                  const Text(
+                    "No products added yet",
+                    style: TextStyle(fontSize: 18, color: Colors.grey),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    "Tap the + button to add your first product",
+                    style: TextStyle(fontSize: 14, color: Colors.grey[500]),
+                    textAlign: TextAlign.center,
+                  ),
+                ],
               ),
             );
           }
@@ -57,12 +78,22 @@ class _ShelterProductDetailsState extends State<ShelterProductDetails> {
               var prod = product[index];
               var productData = prod.data() as Map<String, dynamic>;
 
+              // Convert price to double for proper formatting
+              double price = 0.0;
+              if (productData['p_price'] != null) {
+                if (productData['p_price'] is String) {
+                  price = double.tryParse(productData['p_price']) ?? 0.0;
+                } else if (productData['p_price'] is num) {
+                  price = productData['p_price'].toDouble();
+                }
+              }
+
               return Card(
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(16),
                 ),
                 margin: const EdgeInsets.symmetric(vertical: 8),
-                elevation: 4,
+                elevation: 2,
                 child: ListTile(
                   contentPadding:
                       const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -74,13 +105,25 @@ class _ShelterProductDetailsState extends State<ShelterProductDetails> {
                             width: 60,
                             height: 60,
                             fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) {
+                              return Container(
+                                width: 60,
+                                height: 60,
+                                color: Colors.deepPurple[100],
+                                child: Icon(Icons.error_outline,
+                                    size: 30, color: Colors.deepPurple[900]),
+                              );
+                            },
                           )
                         : Container(
                             width: 60,
                             height: 60,
-                            color: Colors.deepPurple[100],
-                            child: const Icon(Icons.pets,
-                                size: 30, color: Colors.white),
+                            decoration: BoxDecoration(
+                              color: Colors.deepPurple[100],
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Icon(Icons.pets,
+                                size: 30, color: Colors.deepPurple[900]),
                           ),
                   ),
                   title: Text(
@@ -90,11 +133,28 @@ class _ShelterProductDetailsState extends State<ShelterProductDetails> {
                         fontWeight: FontWeight.bold,
                         color: darkFontGrey),
                   ),
-                  subtitle: Text(
-                    "${productData['p_quantity']} • ${productData['p_price']} • ${productData['p_sub_category']}",
-                    style: const TextStyle(color: Colors.grey),
+                  subtitle: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const SizedBox(height: 4),
+                      Text(
+                        "Quantity: ${productData['p_quantity']}",
+                        style: TextStyle(fontSize: 14, color: Colors.grey[700]),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        "Price: \$${price.toStringAsFixed(2)}",
+                        style: TextStyle(fontSize: 14, color: Colors.grey[700]),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        "Category: ${productData['p_sub_category'] ?? 'Not specified'}",
+                        style: TextStyle(fontSize: 14, color: Colors.grey[700]),
+                      ),
+                    ],
                   ),
                   trailing: PopupMenuButton<int>(
+                    icon: Icon(Icons.more_vert, color: Colors.grey[700]),
                     onSelected: (value) async {
                       switch (value) {
                         case 0: // Edit
@@ -108,8 +168,74 @@ class _ShelterProductDetailsState extends State<ShelterProductDetails> {
                             ),
                           );
                           break;
-                        case 1:
-                          await Firestoreservices.deletepet(prod.id);
+                        case 1: // Delete
+                          bool confirmDelete = await showDialog(
+                            context: context,
+                            builder: (BuildContext context) {
+                              return AlertDialog(
+                                title: const Text("Confirm Delete"),
+                                content: const Text(
+                                    "Are you sure you want to delete this product?"),
+                                actions: [
+                                  TextButton(
+                                    onPressed: () =>
+                                        Navigator.of(context).pop(false),
+                                    child: const Text("Cancel"),
+                                  ),
+                                  TextButton(
+                                    onPressed: () =>
+                                        Navigator.of(context).pop(true),
+                                    child: const Text(
+                                      "Delete",
+                                      style: TextStyle(color: Colors.red),
+                                    ),
+                                  ),
+                                ],
+                              );
+                            },
+                          );
+
+                          if (confirmDelete == true) {
+                            // Show loading indicator
+                            showDialog(
+                              context: context,
+                              barrierDismissible: false,
+                              builder: (BuildContext context) {
+                                return const Center(
+                                  child: CircularProgressIndicator(),
+                                );
+                              },
+                            );
+
+                            try {
+                              await FirebaseFirestore.instance
+                                  .collection('products')
+                                  .doc(prod.id)
+                                  .delete();
+
+                              // Close the loading dialog
+                              Navigator.of(context).pop();
+
+                              // Show success message
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text("Product deleted successfully"),
+                                  backgroundColor: Colors.green,
+                                ),
+                              );
+                            } catch (e) {
+                              // Close the loading dialog
+                              Navigator.of(context).pop();
+
+                              // Show error message
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text("Error deleting product: $e"),
+                                  backgroundColor: Colors.red,
+                                ),
+                              );
+                            }
+                          }
                           break;
                       }
                     },

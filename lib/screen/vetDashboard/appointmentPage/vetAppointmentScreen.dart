@@ -5,9 +5,6 @@ import 'package:intl/intl.dart';
 import 'package:pet_care/consts/firebase_consts.dart';
 import 'package:pet_care/screen/vetDashboard/appointmentPage/scheduleAppointmentPage.dart';
 
-/// ---------------------------
-/// VET SIDE - View Appointments with Filters
-/// ---------------------------
 class VetAppointmentsScreen extends StatefulWidget {
   const VetAppointmentsScreen({super.key});
 
@@ -31,7 +28,7 @@ class _VetAppointmentsScreenState extends State<VetAppointmentsScreen> {
         .where('Veterinarian_Id', isEqualTo: currentUser!.uid)
         .snapshots()
         .map((snapshot) => snapshot.docs.map((doc) {
-              final data = doc.data() as Map<String, dynamic>;
+              final data = doc.data();
               data['Appointment_Id'] = doc.id; // docId
               return data;
             }).toList());
@@ -77,7 +74,6 @@ class _VetAppointmentsScreenState extends State<VetAppointmentsScreen> {
     }
   }
 
-  /// Build vet’s appointment list
   Widget _buildAppointments() {
     return StreamBuilder<List<Map<String, dynamic>>>(
       stream: getAppointments(),
@@ -91,7 +87,6 @@ class _VetAppointmentsScreenState extends State<VetAppointmentsScreen> {
 
         var appointments = snapshot.data!;
 
-        // Filter by selected date
         if (_selectedDate != null) {
           appointments = appointments.where((appointment) {
             if (appointment['Date_Time'] is Timestamp) {
@@ -142,7 +137,6 @@ class _VetAppointmentsScreenState extends State<VetAppointmentsScreen> {
                     petSnapshot.data!.data() as Map<String, dynamic>;
                 final petName = petData['pet_name'] ?? "Unnamed Pet";
 
-                // Filter by pet name (case-insensitive)
                 if (_searchName.isNotEmpty &&
                     !petName
                         .toLowerCase()
@@ -166,7 +160,7 @@ class _VetAppointmentsScreenState extends State<VetAppointmentsScreen> {
     );
   }
 
-  /// Card widget for appointment
+  
   Widget _buildAppointmentCard(String appointmentId, String petName,
       String breed, String dateTime, String reason, String status) {
     Color statusColor;
@@ -255,7 +249,7 @@ class _VetAppointmentsScreenState extends State<VetAppointmentsScreen> {
     );
   }
 
-  /// Filter bar with search and date picker
+
   Widget _buildFilterBar() {
     return Padding(
       padding: const EdgeInsets.all(12),

@@ -2,7 +2,6 @@ import 'dart:convert';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:pet_care/screen/login_register_screen/loginScreen.dart';
 import 'package:pet_care/screen/login_register_screen/registerScreen.dart';
 import 'package:pet_care/screen/petOwnerDashboard/ProfileScreen/adoptionScreen.dart';
@@ -33,7 +32,7 @@ class ProfileScreen extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 const Icon(Icons.person_outline,
-                    size: 80, color: Colors.deepOrange),
+                    size: 80, color: Colors.deepPurple),
                 const SizedBox(height: 20),
                 const Text(
                   "You are not logged in",
