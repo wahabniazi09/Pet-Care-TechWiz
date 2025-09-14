@@ -6,6 +6,7 @@ import 'package:pet_care/consts/firebase_consts.dart';
 import 'package:pet_care/screen/petOwnerDashboard/homeScreen/components/bookAppointment.dart';
 import 'package:pet_care/screen/petOwnerDashboard/homeScreen/petDetailsScreen.dart';
 import 'package:pet_care/screen/petOwnerDashboard/homeScreen/components/blogDetails.dart';
+import 'package:pet_care/screen/petOwnerDashboard/homeScreen/view_all_screen.dart';
 import 'package:pet_care/screen/petOwnerDashboard/storeScreen/components/item_details.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -13,49 +14,6 @@ class HomeScreen extends StatefulWidget {
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
-}
-
-// ------------------- ViewAllScreen -------------------
-
-class ViewAllScreen extends StatelessWidget {
-  final String title;
-  final List<Map<String, dynamic>> items;
-  final Widget Function(Map<String, dynamic> item) itemBuilder;
-
-  const ViewAllScreen({
-    super.key,
-    required this.title,
-    required this.items,
-    required this.itemBuilder,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    double screenWidth = MediaQuery.of(context).size.width;
-    int crossAxisCount = 2;
-    double spacing = 16;
-    double itemWidth =
-        (screenWidth - (crossAxisCount + 1) * spacing) / crossAxisCount;
-    double itemHeight = 350;
-    double aspectRatio = itemWidth / itemHeight;
-
-    return Scaffold(
-      appBar: AppBar(title: Text(title)),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: GridView.builder(
-          itemCount: items.length,
-          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: crossAxisCount,
-            mainAxisSpacing: spacing,
-            crossAxisSpacing: spacing,
-            childAspectRatio: aspectRatio,
-          ),
-          itemBuilder: (context, index) => itemBuilder(items[index]),
-        ),
-      ),
-    );
-  }
 }
 
 class _HomeScreenState extends State<HomeScreen> {
@@ -99,8 +57,9 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // ------------------- AppBar -------------------
   Widget _buildAppBar() {
+    final primaryColor = const Color.fromRGBO(49, 39, 79, 1);
+
     return SliverAppBar(
       backgroundColor: Colors.white,
       elevation: _isSearching ? 4 : 0,
@@ -116,8 +75,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 hintStyle: TextStyle(color: Colors.grey[600]),
                 border: InputBorder.none,
                 suffixIcon: IconButton(
-                  icon: Icon(Icons.close,
-                      color: Color.fromARGB(255, 84, 37, 165)),
+                  icon: Icon(Icons.close, color: primaryColor),
                   onPressed: () {
                     setState(() {
                       _isSearching = false;
@@ -135,14 +93,13 @@ class _HomeScreenState extends State<HomeScreen> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Image.asset("assets/images/pet_logo.png", height: 40),
-                Center(
-                  child: const Text(
-                    "PetCare",
-                    style: TextStyle(
-                      color: Color.fromARGB(255, 84, 37, 165),
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold,
-                    ),
+                const SizedBox(width: 8),
+                const Text(
+                  "PetCare",
+                  style: TextStyle(
+                    color: Color.fromRGBO(49, 39, 79, 1),
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
               ],
@@ -150,8 +107,7 @@ class _HomeScreenState extends State<HomeScreen> {
       centerTitle: false,
       leading: _isSearching
           ? IconButton(
-              icon: const Icon(Icons.arrow_back,
-                  color: Color.fromARGB(255, 84, 37, 165)),
+              icon: Icon(Icons.arrow_back, color: primaryColor),
               onPressed: () {
                 setState(() {
                   _isSearching = false;
@@ -172,8 +128,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     _isSearching = true;
                   });
                 },
-                icon: const Icon(Icons.search,
-                    color: Color.fromARGB(255, 84, 37, 165)),
+                icon: Icon(Icons.search, color: primaryColor),
               ),
             ),
           ),
@@ -181,22 +136,29 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // ------------------- Hero Section -------------------
   Widget _buildHeroSection() {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isSmallScreen = screenWidth < 600;
+
     return SliverToBoxAdapter(
       child: Container(
-        height: 200,
-        margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+        height: isSmallScreen ? 180 : 200,
+        margin: EdgeInsets.symmetric(
+            horizontal: isSmallScreen ? 16 : 20,
+            vertical: isSmallScreen ? 12 : 16),
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(24),
+          borderRadius: BorderRadius.circular(20),
           gradient: const LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [Color(0xFF6A89CC), Color(0xFF4A69BB)],
+            colors: [
+              Color.fromRGBO(49, 39, 79, 1),
+              Color.fromRGBO(196, 135, 198, 1),
+            ],
           ),
           boxShadow: [
             BoxShadow(
-              color: Colors.blueGrey.withOpacity(0.3),
+              color: Colors.grey.withOpacity(0.3),
               blurRadius: 15,
               offset: const Offset(0, 8),
             ),
@@ -207,10 +169,15 @@ class _HomeScreenState extends State<HomeScreen> {
             Positioned(
               right: 0,
               bottom: 0,
-              child: Image.asset('assets/images/pet123.png', height: 140),
+              child: Image.asset(
+                'assets/images/pet123.png',
+                height: isSmallScreen ? 100 : 140,
+                fit: BoxFit.contain,
+              ),
             ),
-            const Padding(
-              padding: EdgeInsets.only(left: 24, top: 24),
+            Padding(
+              padding: EdgeInsets.only(
+                  left: isSmallScreen ? 16 : 24, top: isSmallScreen ? 16 : 24),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -218,26 +185,27 @@ class _HomeScreenState extends State<HomeScreen> {
                     "Find Your Perfect Pet",
                     style: TextStyle(
                       color: Colors.white,
-                      fontSize: 22,
+                      fontSize: isSmallScreen ? 18 : 22,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  SizedBox(height: 8),
+                  const SizedBox(height: 8),
                   Text(
                     "Adopt a loving companion today",
                     style: TextStyle(
                       color: Colors.white70,
-                      fontSize: 14,
+                      fontSize: isSmallScreen ? 12 : 14,
                     ),
                   ),
-                  SizedBox(height: 16),
+                  const SizedBox(height: 16),
                   Chip(
                     backgroundColor: Colors.white,
                     label: Text(
                       "Explore Now",
                       style: TextStyle(
-                        color: Color.fromARGB(255, 84, 37, 165),
+                        color: const Color.fromRGBO(49, 39, 79, 1),
                         fontWeight: FontWeight.bold,
+                        fontSize: isSmallScreen ? 12 : 14,
                       ),
                     ),
                   ),
@@ -250,347 +218,350 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // ------------------- Section Heading with View All -------------------
   Widget sectionHeading(
     String title,
     List<Map<String, dynamic>> items,
     Widget Function(Map<String, dynamic>) itemBuilder,
-  ) =>
-      Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              title,
-              style: const TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.w800,
-                color: Color(0xFF333333),
-              ),
-            ),
-            TextButton(
-              onPressed: () {
-                if (items.isEmpty) return;
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => ViewAllScreen(
-                      title: title,
-                      items: items,
-                      itemBuilder: itemBuilder,
-                    ),
-                  ),
-                );
-              },
-              child: const Text(
-                "View All",
-                style: TextStyle(
-                  color: Color.fromARGB(255, 84, 37, 165),
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-          ],
-        ),
-      );
+  ) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isSmallScreen = screenWidth < 600;
 
-  // ------------------- Cards -------------------
-  Widget _animalCard(Map<String, dynamic> animal) => Container(
-        width: 260,
-        margin: const EdgeInsets.only(right: 16),
-        decoration: _cardDecoration(),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _imageBuilder(animal["animal_image"], 180, Icons.pets),
-            Padding(
-              padding: const EdgeInsets.all(12.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(animal["animal_name"] ?? "Unknown",
-                      style: const TextStyle(
-                          fontSize: 20, fontWeight: FontWeight.bold)),
-                  const SizedBox(height: 4),
-                  Text(animal["breed"] ?? "Mixed Breed",
-                      style: TextStyle(color: Colors.grey[600])),
-                  const SizedBox(height: 4),
-                  Row(
-                    children: [
-                      Icon(Icons.location_on,
-                          size: 14, color: Colors.deepOrange),
-                      const SizedBox(width: 4),
-                      Text(animal["location"] ?? "Unknown location",
-                          style:
-                              TextStyle(color: Colors.grey[600], fontSize: 12)),
-                    ],
-                  ),
-                ],
-              ),
+    return Padding(
+      padding: EdgeInsets.symmetric(
+          horizontal: isSmallScreen ? 16 : 20,
+          vertical: isSmallScreen ? 12 : 16),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            title,
+            style: TextStyle(
+              fontSize: isSmallScreen ? 18 : 22,
+              fontWeight: FontWeight.w800,
+              color: const Color(0xFF333333),
             ),
-            const Spacer(),
-            Center(
-              child: ElevatedButton.icon(
-                onPressed: () {
-                  if (!_isLoggedIn()) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                          content: Text("Please login to adopt an animal")),
-                    );
-                    return;
-                  }
-                  _navigateToPetDetails(animal);
-                },
-                icon: const Icon(Icons.favorite_border),
-                label: const Text("Adopt Now"),
-                style: _buttonStyle(),
-              ),
-            ),
-            const SizedBox(height: 12),
-          ],
-        ),
-      );
-
-  Widget _blogCard(Map<String, dynamic> blog, String blogId) => GestureDetector(
-        onTap: () => _navigateToBlogDetail(blog, blogId),
-        child: Container(
-          width: 240,
-          margin: const EdgeInsets.only(right: 16),
-          decoration: _cardDecoration(),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _imageBuilder(blog["image"], 140, Icons.article),
-              Padding(
-                padding: const EdgeInsets.all(12),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    if (blog["category"] != null)
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 10, vertical: 5),
-                        margin: const EdgeInsets.only(bottom: 8),
-                        decoration: BoxDecoration(
-                          color: Color.fromARGB(255, 84, 37, 165),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Text(
-                          blog["category"].toString().toUpperCase(),
-                          style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 10,
-                              fontWeight: FontWeight.bold),
-                        ),
-                      ),
-                    Text(blog["title"] ?? "Untitled Blog",
-                        style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 15,
-                            height: 1.3),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis),
-                    const SizedBox(height: 6),
-                    Row(
-                      children: [
-                        Icon(Icons.calendar_today,
-                            size: 12, color: Colors.grey[600]),
-                        const SizedBox(width: 4),
-                        Text(blog["date"] ?? "Unknown date",
-                            style: TextStyle(
-                                color: Colors.grey[600], fontSize: 11)),
-                        const SizedBox(width: 12),
-                        Icon(Icons.person, size: 12, color: Colors.grey[600]),
-                        const SizedBox(width: 4),
-                        Text(blog["author"] ?? "Unknown author",
-                            style: TextStyle(
-                                color: Colors.grey[600], fontSize: 11)),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                        blog["excerpt"] ??
-                            "Read this interesting blog post about pet care...",
-                        style: TextStyle(
-                            color: Colors.grey[700], fontSize: 12, height: 1.4),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis),
-                    const SizedBox(height: 12),
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        onPressed: () => _navigateToBlogDetail(blog, blogId),
-                        style: _buttonStyle(),
-                        child: const Text("Read More",
-                            style: TextStyle(
-                                fontSize: 13, fontWeight: FontWeight.w600)),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
           ),
-        ),
-      );
-
-  Widget _productCard(Map<String, dynamic> product) => Container(
-        width: 220,
-        margin: const EdgeInsets.only(right: 16),
-        decoration: _cardDecoration(),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _imageBuilder(product["p_image"], 160, Icons.shopping_bag),
-            Padding(
-              padding: const EdgeInsets.all(12),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(product["p_name"] ?? "Unnamed Product",
-                      style: const TextStyle(
-                          fontWeight: FontWeight.bold, fontSize: 16),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis),
-                  const SizedBox(height: 6),
-                  Text(product["p_category"] ?? "General",
-                      style: TextStyle(color: Colors.grey[600], fontSize: 13)),
-                  const SizedBox(height: 6),
-                  Text("\$${product["p_price"] ?? "0"}",
-                      style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          color: Colors.deepOrange,
-                          fontSize: 15)),
-                ],
-              ),
-            ),
-            const Spacer(),
-            Center(
-              child: ElevatedButton(
-                onPressed: () {
-                  if (!_isLoggedIn()) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                          content: Text("Please login to buy Product")),
-                    );
-                    return;
-                  }
-                  Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (_) => ItemDetails(
-                              title: product["p_name"], data: product)));
-                },
-                style: _buttonStyle(),
-                child: const Text("Buy Product"),
-              ),
-            ),
-            const SizedBox(height: 12),
-          ],
-        ),
-      );
-
-  Widget _vetCard(Map<String, dynamic> vet) => Container(
-        width: 220,
-        margin: const EdgeInsets.only(right: 16),
-        decoration: _cardDecoration(),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _imageBuilder(vet["profilePic"], 140, Icons.person),
-            Padding(
-              padding: const EdgeInsets.all(12),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(vet["name"] ?? "Unnamed Vet",
-                      style: const TextStyle(
-                          fontWeight: FontWeight.bold, fontSize: 16)),
-                  const SizedBox(height: 4),
-                  Text(vet["speciality"] ?? "Veterinarian",
-                      style: TextStyle(color: Colors.grey[600], fontSize: 13)),
-                  const SizedBox(height: 8),
-                  Center(
-                    child: ElevatedButton(
-                      onPressed: () {
-                        if (!_isLoggedIn()) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                                content:
-                                    Text("Please login to book appointment")),
-                          );
-                          return;
-                        }
-                        _bookAppointment(vet);
-                      },
-                      style: _buttonStyle(),
-                      child: const Text("Book Appointment"),
-                    ),
+          TextButton(
+            onPressed: () {
+              if (items.isEmpty) return;
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => ViewAllScreen(
+                    title: title,
+                    items: items,
+                    itemBuilder: itemBuilder,
                   ),
-                ],
+                ),
+              );
+            },
+            child: const Text(
+              "View All",
+              style: TextStyle(
+                color: Color.fromRGBO(49, 39, 79, 1),
+                fontWeight: FontWeight.w600,
               ),
             ),
-          ],
-        ),
-      );
-
-  // ------------------- Carousel Builder -------------------
-  Widget _carouselBuilder({
-    required String collection,
-    required IconData emptyIcon,
-    required String emptyText,
-    required Widget Function(dynamic item) cardBuilder,
-    dynamic Function(QueryDocumentSnapshot)? customMap,
-  }) {
-    return SizedBox(
-      height: 360,
-      child: StreamBuilder<QuerySnapshot>(
-        stream: FirebaseFirestore.instance.collection(collection).snapshots(),
-        builder: (context, snapshot) {
-          if (!snapshot.hasData) {
-            return const Center(
-              child: CircularProgressIndicator(
-                valueColor: AlwaysStoppedAnimation<Color>(
-                    Color.fromARGB(255, 84, 37, 165)),
-              ),
-            );
-          }
-
-          final items = snapshot.data!.docs
-              .map((doc) => customMap != null
-                  ? customMap(doc)
-                  : doc.data() as Map<String, dynamic>)
-              .toList();
-
-          if (items.isEmpty) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(emptyIcon, size: 50, color: Colors.grey[400]),
-                  const SizedBox(height: 12),
-                  Text(emptyText, style: TextStyle(color: Colors.grey[600])),
-                ],
-              ),
-            );
-          }
-
-          return ListView.builder(
-            scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            itemCount: items.length,
-            itemBuilder: (context, index) => cardBuilder(items[index]),
-          );
-        },
+          ),
+        ],
       ),
     );
   }
 
-  // ------------------- Helper Methods -------------------
+  Widget _animalCard(Map<String, dynamic> animal) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isSmallScreen = screenWidth < 600;
+
+    return Container(
+      width: isSmallScreen ? 220 : 260,
+      margin: EdgeInsets.only(right: isSmallScreen ? 12 : 16),
+      decoration: _cardDecoration(),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _imageBuilder(
+              animal["animal_image"], isSmallScreen ? 150 : 180, Icons.pets),
+          Padding(
+            padding: EdgeInsets.all(isSmallScreen ? 8.0 : 12.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(animal["animal_name"] ?? "Unknown",
+                    style: TextStyle(
+                        fontSize: isSmallScreen ? 16 : 20,
+                        fontWeight: FontWeight.bold)),
+                const SizedBox(height: 4),
+                Text(animal["breed"] ?? "Mixed Breed",
+                    style: TextStyle(
+                      color: Colors.grey[600],
+                      fontSize: isSmallScreen ? 12 : 14,
+                    )),
+                const SizedBox(height: 4),
+                Row(
+                  children: [
+                    Icon(Icons.location_on,
+                        size: isSmallScreen ? 12 : 14,
+                        color: Colors.deepOrange),
+                    const SizedBox(width: 4),
+                    Text(animal["location"] ?? "Unknown location",
+                        style: TextStyle(
+                            color: Colors.grey[600],
+                            fontSize: isSmallScreen ? 10 : 12)),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          const Spacer(),
+          Center(
+            child: ElevatedButton.icon(
+              onPressed: () {
+                if (!_isLoggedIn()) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text("Please login to adopt an animal"),
+                      backgroundColor: Color.fromRGBO(49, 39, 79, 1),
+                    ),
+                  );
+                  return;
+                }
+                _navigateToPetDetails(animal);
+              },
+              icon: const Icon(Icons.favorite_border, size: 16),
+              label: Text("Adopt Now",
+                  style: TextStyle(fontSize: isSmallScreen ? 12 : 14)),
+              style: _buttonStyle(),
+            ),
+          ),
+          SizedBox(height: isSmallScreen ? 8 : 12),
+        ],
+      ),
+    );
+  }
+
+  Widget _blogCard(Map<String, dynamic> blog, String blogId) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isSmallScreen = screenWidth < 600;
+
+    return GestureDetector(
+      onTap: () => _navigateToBlogDetail(blog, blogId),
+      child: Container(
+        width: isSmallScreen ? 200 : 240,
+        margin: EdgeInsets.only(right: isSmallScreen ? 12 : 16),
+        decoration: _cardDecoration(),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _imageBuilder(
+                blog["image"], isSmallScreen ? 120 : 140, Icons.article),
+            Padding(
+              padding: EdgeInsets.all(isSmallScreen ? 8.0 : 12.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (blog["category"] != null)
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 4),
+                      margin: const EdgeInsets.only(bottom: 8),
+                      decoration: BoxDecoration(
+                        color: const Color.fromRGBO(49, 39, 79, 1),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        blog["category"].toString().toUpperCase(),
+                        style: TextStyle(
+                            color: Colors.white,
+                            fontSize: isSmallScreen ? 8 : 10,
+                            fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  Text(blog["title"] ?? "Untitled Blog",
+                      style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: isSmallScreen ? 13 : 15,
+                          height: 1.3),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis),
+                  const SizedBox(height: 6),
+                  Row(
+                    children: [
+                      Icon(Icons.calendar_today,
+                          size: isSmallScreen ? 10 : 12,
+                          color: Colors.grey[600]),
+                      const SizedBox(width: 4),
+                      Text(blog["date"] ?? "Unknown date",
+                          style: TextStyle(
+                              color: Colors.grey[600],
+                              fontSize: isSmallScreen ? 9 : 11)),
+                      const SizedBox(width: 8),
+                      Icon(Icons.person,
+                          size: isSmallScreen ? 10 : 12,
+                          color: Colors.grey[600]),
+                      const SizedBox(width: 4),
+                      Text(blog["author"] ?? "Unknown author",
+                          style: TextStyle(
+                              color: Colors.grey[600],
+                              fontSize: isSmallScreen ? 9 : 11)),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                      blog["excerpt"] ??
+                          "Read this interesting blog post about pet care...",
+                      style: TextStyle(
+                          color: Colors.grey[700],
+                          fontSize: isSmallScreen ? 10 : 12,
+                          height: 1.4),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis),
+                  const SizedBox(height: 12),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: () => _navigateToBlogDetail(blog, blogId),
+                      style: _buttonStyle(),
+                      child: Text("Read More",
+                          style: TextStyle(
+                              fontSize: isSmallScreen ? 11 : 13,
+                              fontWeight: FontWeight.w600)),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _productCard(Map<String, dynamic> product) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isSmallScreen = screenWidth < 600;
+
+    return Container(
+      width: isSmallScreen ? 190 : 220,
+      margin: EdgeInsets.only(right: isSmallScreen ? 12 : 16),
+      decoration: _cardDecoration(),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _imageBuilder(product["p_image"], isSmallScreen ? 140 : 160,
+              Icons.shopping_bag),
+          Padding(
+            padding: EdgeInsets.all(isSmallScreen ? 8.0 : 12.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(product["p_name"] ?? "Unnamed Product",
+                    style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: isSmallScreen ? 14 : 16),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis),
+                const SizedBox(height: 6),
+                Text(product["p_category"] ?? "General",
+                    style: TextStyle(
+                        color: Colors.grey[600],
+                        fontSize: isSmallScreen ? 11 : 13)),
+                const SizedBox(height: 6),
+                Text("\$${product["p_price"] ?? "0"}",
+                    style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: Colors.deepOrange,
+                        fontSize: isSmallScreen ? 13 : 15)),
+              ],
+            ),
+          ),
+          const Spacer(),
+          Center(
+            child: ElevatedButton(
+              onPressed: () {
+                if (!_isLoggedIn()) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text("Please login to buy Product"),
+                      backgroundColor: Color.fromRGBO(49, 39, 79, 1),
+                    ),
+                  );
+                  return;
+                }
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (_) => ItemDetails(
+                            title: product["p_name"], data: product)));
+              },
+              style: _buttonStyle(),
+              child: Text("Buy Product",
+                  style: TextStyle(fontSize: isSmallScreen ? 12 : 14)),
+            ),
+          ),
+          SizedBox(height: isSmallScreen ? 8 : 12),
+        ],
+      ),
+    );
+  }
+
+  Widget _vetCard(Map<String, dynamic> vet) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isSmallScreen = screenWidth < 600;
+
+    return Container(
+      width: isSmallScreen ? 190 : 220,
+      margin: EdgeInsets.only(right: isSmallScreen ? 12 : 16),
+      decoration: _cardDecoration(),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _imageBuilder(
+              vet["profilePic"], isSmallScreen ? 120 : 140, Icons.person),
+          Padding(
+            padding: EdgeInsets.all(isSmallScreen ? 8.0 : 12.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(vet["name"] ?? "Unnamed Vet",
+                    style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: isSmallScreen ? 14 : 16)),
+                const SizedBox(height: 4),
+                Text(vet["speciality"] ?? "Veterinarian",
+                    style: TextStyle(
+                        color: Colors.grey[600],
+                        fontSize: isSmallScreen ? 11 : 13)),
+                const SizedBox(height: 8),
+                Center(
+                  child: ElevatedButton(
+                    onPressed: () {
+                      if (!_isLoggedIn()) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text("Please login to book appointment"),
+                            backgroundColor: Color.fromRGBO(49, 39, 79, 1),
+                          ),
+                        );
+                        return;
+                      }
+                      _bookAppointment(vet);
+                    },
+                    style: _buttonStyle(),
+                    child: Text("Book Appointment",
+                        style: TextStyle(fontSize: isSmallScreen ? 11 : 13)),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   BoxDecoration _cardDecoration() => BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
               color: Colors.black.withOpacity(0.05),
@@ -602,7 +573,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _imageBuilder(
       String? base64Img, double height, IconData fallbackIcon) {
     return ClipRRect(
-      borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+      borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
       child: base64Img != null
           ? Image.memory(base64Decode(base64Img),
               height: height, width: double.infinity, fit: BoxFit.cover)
@@ -617,14 +588,17 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   ButtonStyle _buttonStyle() => ElevatedButton.styleFrom(
-        backgroundColor: Colors.deepOrange,
+        backgroundColor: const Color.fromRGBO(49, 39, 79, 1),
         foregroundColor: Colors.white,
-        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 24),
+        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       );
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isSmallScreen = screenWidth < 600;
+
     return Scaffold(
       backgroundColor: const Color(0xFFF8F9FA),
       body: SafeArea(
@@ -633,7 +607,6 @@ class _HomeScreenState extends State<HomeScreen> {
             _buildAppBar(),
             _buildHeroSection(),
 
-            // ------------------- Veterinarians -------------------
             StreamBuilder<QuerySnapshot>(
               stream: FirebaseFirestore.instance
                   .collection("users")
@@ -656,7 +629,8 @@ class _HomeScreenState extends State<HomeScreen> {
               },
             ),
 
-            const SliverToBoxAdapter(child: SizedBox(height: 24)),
+            SliverToBoxAdapter(
+                child: SizedBox(height: isSmallScreen ? 16 : 24)),
 
             // ------------------- Adoption -------------------
             StreamBuilder<QuerySnapshot>(
@@ -682,7 +656,8 @@ class _HomeScreenState extends State<HomeScreen> {
               },
             ),
 
-            const SliverToBoxAdapter(child: SizedBox(height: 24)),
+            SliverToBoxAdapter(
+                child: SizedBox(height: isSmallScreen ? 16 : 24)),
 
             // ------------------- Products -------------------
             StreamBuilder<QuerySnapshot>(
@@ -707,7 +682,8 @@ class _HomeScreenState extends State<HomeScreen> {
               },
             ),
 
-            const SliverToBoxAdapter(child: SizedBox(height: 24)),
+            SliverToBoxAdapter(
+                child: SizedBox(height: isSmallScreen ? 16 : 24)),
 
             // ------------------- Blogs -------------------
             StreamBuilder<QuerySnapshot>(
@@ -734,51 +710,72 @@ class _HomeScreenState extends State<HomeScreen> {
               },
             ),
 
-            const SliverToBoxAdapter(child: SizedBox(height: 24)),
+            SliverToBoxAdapter(
+                child: SizedBox(height: isSmallScreen ? 16 : 24)),
           ],
         ),
       ),
     );
   }
 
-  Widget vetsCarousel(List<Map<String, dynamic>> vets) => SizedBox(
-        height: 300,
-        child: ListView.builder(
-          scrollDirection: Axis.horizontal,
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          itemCount: vets.length,
-          itemBuilder: (context, index) => _vetCard(vets[index]),
-        ),
-      );
+  Widget vetsCarousel(List<Map<String, dynamic>> vets) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isSmallScreen = screenWidth < 600;
 
-  Widget animalCarousel(List<Map<String, dynamic>> animals) => SizedBox(
-        height: 360,
-        child: ListView.builder(
-          scrollDirection: Axis.horizontal,
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          itemCount: animals.length,
-          itemBuilder: (context, index) => _animalCard(animals[index]),
-        ),
-      );
+    return SizedBox(
+      height: isSmallScreen ? 260 : 300,
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        padding: EdgeInsets.symmetric(horizontal: isSmallScreen ? 12 : 16),
+        itemCount: vets.length,
+        itemBuilder: (context, index) => _vetCard(vets[index]),
+      ),
+    );
+  }
 
-  Widget productsCarousel(List<Map<String, dynamic>> products) => SizedBox(
-        height: 360,
-        child: ListView.builder(
-          scrollDirection: Axis.horizontal,
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          itemCount: products.length,
-          itemBuilder: (context, index) => _productCard(products[index]),
-        ),
-      );
+  Widget animalCarousel(List<Map<String, dynamic>> animals) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isSmallScreen = screenWidth < 600;
 
-  Widget blogsCarousel(List<Map<String, dynamic>> blogs) => SizedBox(
-        height: 360,
-        child: ListView.builder(
-          scrollDirection: Axis.horizontal,
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          itemCount: blogs.length,
-          itemBuilder: (context, index) =>
-              _blogCard(blogs[index]['data'], blogs[index]['id']),
-        ),
-      );
+    return SizedBox(
+      height: isSmallScreen ? 320 : 360,
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        padding: EdgeInsets.symmetric(horizontal: isSmallScreen ? 12 : 16),
+        itemCount: animals.length,
+        itemBuilder: (context, index) => _animalCard(animals[index]),
+      ),
+    );
+  }
+
+  Widget productsCarousel(List<Map<String, dynamic>> products) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isSmallScreen = screenWidth < 600;
+
+    return SizedBox(
+      height: isSmallScreen ? 320 : 360,
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        padding: EdgeInsets.symmetric(horizontal: isSmallScreen ? 12 : 16),
+        itemCount: products.length,
+        itemBuilder: (context, index) => _productCard(products[index]),
+      ),
+    );
+  }
+
+  Widget blogsCarousel(List<Map<String, dynamic>> blogs) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isSmallScreen = screenWidth < 600;
+
+    return SizedBox(
+      height: isSmallScreen ? 320 : 360,
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        padding: EdgeInsets.symmetric(horizontal: isSmallScreen ? 12 : 16),
+        itemCount: blogs.length,
+        itemBuilder: (context, index) =>
+            _blogCard(blogs[index]['data'], blogs[index]['id']),
+      ),
+    );
+  }
 }

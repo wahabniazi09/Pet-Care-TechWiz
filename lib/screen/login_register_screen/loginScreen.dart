@@ -1,25 +1,28 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:pet_care/animation/fadeAnimation.dart';
 import 'package:pet_care/consts/firebase_consts.dart';
+import 'package:pet_care/consts/theme_constant.dart';
 import 'package:pet_care/screen/login_register_screen/ForgetScreen.dart';
+import 'package:pet_care/screen/login_register_screen/registerScreen.dart';
 import 'package:pet_care/screen/shelterDashboard/shelterScreen.dart';
 import 'package:pet_care/screen/petOwnerDashboard/homeScreen/homeNav.dart';
 import 'package:pet_care/screen/vetDashboard/vetScreen.dart';
-import 'package:pet_care/screen/login_register_screen/registerScreen.dart';
 import 'package:pet_care/screen/widgets/custom_form.dart';
+import 'package:pet_care/screen/widgets/snackBar.dart';
 import 'package:pet_care/services/authServices/authentication.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
 
   @override
-  State<LoginScreen> createState() => _FancyLoginScreenState();
+  State<LoginScreen> createState() => _LoginScreenState();
 }
 
-class _FancyLoginScreenState extends State<LoginScreen> {
-  final TextEditingController _emailController = TextEditingController();
-  final TextEditingController _passwordController = TextEditingController();
+class _LoginScreenState extends State<LoginScreen> {
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
   final Authentication _authService = Authentication();
   final FirebaseFirestore firestore = FirebaseFirestore.instance;
 
@@ -32,79 +35,93 @@ class _FancyLoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
+  void _showSnack(String message, {bool isError = false}) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: isError ? Colors.red : AppTheme.primaryColor,
+        behavior: SnackBarBehavior.floating,
+        margin: const EdgeInsets.all(16),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      ),
+    );
+  }
+
   Future<void> signInUser() async {
-    if (_emailController.text.isEmpty || _passwordController.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Please enter email and password")),
-      );
+    final email = _emailController.text.trim();
+    final password = _passwordController.text.trim();
+
+    if (email.isEmpty || password.isEmpty) {
+      AppNotifier.showSnack(context,
+          message: "Please enter email and password", isError: true);
       return;
     }
 
     setState(() => isLoading = true);
 
-    await _authService
-        .signIn(
-      email: _emailController.text.trim(),
-      password: _passwordController.text.trim(),
-    )
-        .then((value) async {
-      if (value != null) {
-        String userId = value.user!.uid;
-        DocumentSnapshot userDoc =
-            await firestore.collection(userCollection).doc(userId).get();
+    try {
+      final userCredential = await _authService.signIn(
+        email: email,
+        password: password,
+      );
 
-        if (userDoc.exists) {
-          String role = userDoc['role'];
+      if (userCredential.user != null) {
+        final uid = userCredential.user!.uid;
+        final doc = await firestore.collection(userCollection).doc(uid).get();
 
+        if (doc.exists) {
+          final role = doc['role'] as String;
+
+          Widget nextScreen;
           switch (role) {
-            case "pet":
-              Navigator.pushReplacement(context,
-                  MaterialPageRoute(builder: (context) => const Home()));
+            case "vet":
+              nextScreen = const VetScreen();
               break;
             case "shelter":
-              Navigator.pushReplacement(context,
-                  MaterialPageRoute(builder: (_) => const ShelterScreen()));
-              break;
-            case "vet":
-              Navigator.pushReplacement(context,
-                  MaterialPageRoute(builder: (_) => const VetScreen()));
+              nextScreen = const ShelterScreen();
               break;
             default:
-              Navigator.pushReplacement(
-                  context, MaterialPageRoute(builder: (_) => const Home()));
+              nextScreen = const Home();
           }
+
+          AppNotifier.showSnack(context, message: "Login Successful!");
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (_) => nextScreen),
+          );
+        } else {
+          AppNotifier.showSnack(context,
+              message: "User data not found!", isError: true);
         }
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Login Successful")),
-        );
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Login Failed")),
-        );
       }
-    });
-
-    setState(() => isLoading = false);
+    } on FirebaseAuthException catch (e) {
+      AppNotifier.handleAuthError(context, e);
+    } catch (e) {
+      AppNotifier.handleError(context, e);
+    } finally {
+      setState(() => isLoading = false);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     final width = MediaQuery.of(context).size.width;
+    final isSmallScreen = width < 600;
+
     return Scaffold(
       backgroundColor: Colors.white,
       body: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
-            // Background Image Animation
-            Container(
-              height: 400,
+            // Background
+            SizedBox(
+              height: isSmallScreen ? 300 : 400,
               child: Stack(
                 children: <Widget>[
                   Positioned(
                     top: 0,
-                    height: 400,
+                    height: isSmallScreen ? 300 : 400,
                     width: width,
                     child: FadeAnimation(
                       1,
@@ -119,15 +136,15 @@ class _FancyLoginScreenState extends State<LoginScreen> {
                     ),
                   ),
                   Positioned(
-                    top: 45,
-                    height: 300,
+                    top: isSmallScreen ? 30 : 45,
+                    height: isSmallScreen ? 250 : 300,
                     width: width + 15,
                     child: FadeAnimation(
                       1,
                       Container(
                         decoration: const BoxDecoration(
                           image: DecorationImage(
-                            image: AssetImage('assets/images/bg1.png' ''),
+                            image: AssetImage('assets/images/bg1.png'),
                             fit: BoxFit.fitHeight,
                           ),
                         ),
@@ -138,9 +155,9 @@ class _FancyLoginScreenState extends State<LoginScreen> {
               ),
             ),
 
-            // Login Form
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 40),
+              padding:
+                  EdgeInsets.symmetric(horizontal: isSmallScreen ? 30 : 40),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
@@ -149,14 +166,13 @@ class _FancyLoginScreenState extends State<LoginScreen> {
                     const Text(
                       "Login",
                       style: TextStyle(
-                          color: Color.fromRGBO(49, 39, 79, 1),
-                          fontWeight: FontWeight.bold,
-                          fontSize: 30),
+                        color: AppTheme.primaryColor,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 30,
+                      ),
                     ),
                   ),
-                  const SizedBox(height: 30),
-
-                  // Email + Password Fields
+                  SizedBox(height: isSmallScreen ? 20 : 30),
                   FadeAnimation(
                     1.7,
                     Container(
@@ -174,22 +190,21 @@ class _FancyLoginScreenState extends State<LoginScreen> {
                       child: Column(
                         children: <Widget>[
                           CustomTextField(
-                              controller: _emailController,
-                              hint: "Email",
-                              keyboardType: TextInputType.emailAddress),
+                            controller: _emailController,
+                            hint: "Email",
+                            keyboardType: TextInputType.emailAddress,
+                          ),
                           CustomTextField(
-                              controller: _passwordController,
-                              hint: "Password",
-                              keyboardType: TextInputType.visiblePassword,
-                              obscure: true),
+                            controller: _passwordController,
+                            hint: "Password",
+                            obscure: true,
+                            keyboardType: TextInputType.visiblePassword,
+                          ),
                         ],
                       ),
                     ),
                   ),
-
-                  const SizedBox(height: 20),
-
-                  // Forgot Password
+                  SizedBox(height: isSmallScreen ? 15 : 20),
                   FadeAnimation(
                     1.7,
                     Center(
@@ -203,24 +218,21 @@ class _FancyLoginScreenState extends State<LoginScreen> {
                         },
                         child: const Text(
                           "Forgot Password?",
-                          style: TextStyle(
-                              color: Color.fromRGBO(196, 135, 198, 1)),
+                          style: TextStyle(color: AppTheme.secondaryColor),
                         ),
                       ),
                     ),
                   ),
-
-                  const SizedBox(height: 10),
-
-                  // Login Button
+                  SizedBox(height: isSmallScreen ? 8 : 10),
                   FadeAnimation(
                     1.9,
                     Container(
                       height: 50,
-                      margin: const EdgeInsets.symmetric(horizontal: 60),
+                      margin: EdgeInsets.symmetric(
+                          horizontal: isSmallScreen ? 40 : 60),
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(50),
-                        color: const Color.fromRGBO(49, 39, 79, 1),
+                        color: AppTheme.primaryColor,
                       ),
                       child: Center(
                         child: isLoading
@@ -236,10 +248,7 @@ class _FancyLoginScreenState extends State<LoginScreen> {
                       ),
                     ),
                   ),
-
-                  const SizedBox(height: 10),
-
-                  // Sign Up Link
+                  SizedBox(height: isSmallScreen ? 8 : 10),
                   FadeAnimation(
                     2,
                     Center(

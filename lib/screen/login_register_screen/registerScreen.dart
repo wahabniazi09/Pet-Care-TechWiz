@@ -5,8 +5,12 @@ import 'package:pet_care/consts/firebase_consts.dart';
 import 'package:pet_care/screen/shelterDashboard/shelterScreen.dart';
 import 'package:pet_care/screen/login_register_screen/loginScreen.dart';
 import 'package:pet_care/screen/petOwnerDashboard/homeScreen/homeNav.dart';
+import 'package:pet_care/consts/theme_constant.dart';
+import 'package:pet_care/screen/login_register_screen/loginScreen.dart';
+import 'package:pet_care/screen/shelterDashboard/shelterScreen.dart';
 import 'package:pet_care/screen/vetDashboard/vetScreen.dart';
 import 'package:pet_care/screen/widgets/custom_form.dart';
+import 'package:pet_care/screen/widgets/snackBar.dart';
 import 'package:pet_care/services/authServices/authentication.dart';
 
 class RegisterScreen extends StatefulWidget {
@@ -19,6 +23,7 @@ class RegisterScreen extends StatefulWidget {
 class _RegisterScreenState extends State<RegisterScreen> {
   final _formKey = GlobalKey<FormState>();
 
+  // Controllers
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
   final nameController = TextEditingController();
@@ -40,9 +45,63 @@ class _RegisterScreenState extends State<RegisterScreen> {
     super.dispose();
   }
 
+  void signUpUser() async {
+    if (_formKey.currentState!.validate()) {
+      try {
+        setState(() => isLoading = true);
+
+        final userCredential = await authentication.signUp(
+          email: emailController.text.trim(),
+          password: passwordController.text.trim(),
+        );
+
+        if (userCredential != null) {
+          await authentication.storeUserData(
+            name: nameController.text,
+            email: emailController.text,
+            phone: phoneController.text,
+            address: addressController.text,
+            role: selectedRole,
+          );
+
+          currentUser = userCredential.user;
+
+          AppNotifier.showSnack(
+            context,
+            message: "Account created successfully!",
+          );
+
+          Widget switchRoleScreen;
+          switch (selectedRole) {
+            case "vet":
+              switchRoleScreen = const VetScreen();
+              break;
+            case "shelter":
+              switchRoleScreen = const ShelterScreen();
+              break;
+            default:
+              switchRoleScreen = const Home();
+          }
+
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (_) => switchRoleScreen),
+          );
+        }
+      } on FirebaseAuthException catch (e) {
+        AppNotifier.handleAuthError(context, e);
+      } catch (_) {
+        AppNotifier.handleError(context, _);
+      } finally {
+        setState(() => isLoading = false);
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final width = MediaQuery.of(context).size.width;
+    final isSmallScreen = width < 600;
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -53,12 +112,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
               SizedBox(
-                height: 300,
+                height: isSmallScreen ? 250 : 300,
                 child: Stack(
                   children: <Widget>[
                     Positioned(
                       top: 0,
-                      height: 200,
+                      height: isSmallScreen ? 150 : 200,
                       width: width,
                       child: FadeAnimation(
                         1,
@@ -73,8 +132,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       ),
                     ),
                     Positioned(
-                      top: 45,
-                      height: 400,
+                      top: isSmallScreen ? 30 : 45,
+                      height: isSmallScreen ? 300 : 400,
                       width: width + 15,
                       child: FadeAnimation(
                         1,
@@ -92,7 +151,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 ),
               ),
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 40),
+                padding:
+                    EdgeInsets.symmetric(horizontal: isSmallScreen ? 30 : 40),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
@@ -101,13 +161,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       const Text(
                         "Register",
                         style: TextStyle(
-                          color: Color.fromRGBO(49, 39, 79, 1),
+                          color: AppTheme.primaryColor,
                           fontWeight: FontWeight.bold,
                           fontSize: 30,
                         ),
                       ),
                     ),
-                    const SizedBox(height: 20),
+                    SizedBox(height: isSmallScreen ? 15 : 20),
+
                     FadeAnimation(
                       1.7,
                       Container(
@@ -116,37 +177,30 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           color: Colors.white,
                           boxShadow: [
                             BoxShadow(
-                              color: Color.fromRGBO(196, 135, 198, .3),
+                              color: const Color.fromRGBO(196, 135, 198, .3),
                               blurRadius: 20,
                               offset: const Offset(0, 10),
-                            )
+                            ),
                           ],
                         ),
                         child: Column(
                           children: <Widget>[
                             CustomTextField(
-                              controller: nameController,
-                              hint: "Name",
-                            ),
+                                controller: nameController, hint: "Name"),
                             CustomTextField(
-                              controller: emailController,
-                              hint: "Email",
-                              keyboardType: TextInputType.emailAddress,
-                            ),
+                                controller: emailController,
+                                hint: "Email",
+                                keyboardType: TextInputType.emailAddress),
                             CustomTextField(
-                              controller: phoneController,
-                              hint: "Contact No.",
-                              keyboardType: TextInputType.phone,
-                            ),
+                                controller: phoneController,
+                                hint: "Contact No.",
+                                keyboardType: TextInputType.phone),
                             CustomTextField(
-                              controller: addressController,
-                              hint: "Address",
-                            ),
+                                controller: addressController, hint: "Address"),
                             CustomTextField(
-                              controller: passwordController,
-                              hint: "Password",
-                              obscure: true,
-                            ),
+                                controller: passwordController,
+                                hint: "Password",
+                                obscure: true),
                             FadeAnimation(
                               1.8,
                               Container(
@@ -165,14 +219,22 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                   items: ["vet", "shelter", "pet"].map((role) {
                                     return DropdownMenuItem(
                                       value: role,
-                                      child: Text(role),
+                                      child: Text(
+                                        role.toUpperCase(),
+                                        style: TextStyle(
+                                          color: AppTheme.primaryColor,
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                      ),
                                     );
                                   }).toList(),
-                                  onChanged: (String? newValue) {
-                                    setState(() {
-                                      selectedRole = newValue!;
-                                    });
-                                  },
+                                  onChanged: (val) =>
+                                      setState(() => selectedRole = val!),
+                                  dropdownColor: Colors.white,
+                                  style: TextStyle(
+                                    color: AppTheme.primaryColor,
+                                    fontWeight: FontWeight.w500,
+                                  ),
                                 ),
                               ),
                             ),
@@ -180,32 +242,41 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         ),
                       ),
                     ),
-                    const SizedBox(height: 20),
+
+                    SizedBox(height: isSmallScreen ? 15 : 20),
+
+                    // Sign Up Button
                     FadeAnimation(
                       1.9,
                       Container(
                         height: 50,
-                        margin: const EdgeInsets.symmetric(horizontal: 60),
+                        margin: EdgeInsets.symmetric(
+                            horizontal: isSmallScreen ? 40 : 60),
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(50),
-                          color: const Color.fromRGBO(49, 39, 79, 1),
+                          color: AppTheme.primaryColor,
                         ),
                         child: Center(
                           child: isLoading
                               ? const CircularProgressIndicator(
-                                  color: Colors.white,
-                                )
+                                  color: Colors.white)
                               : TextButton(
                                   onPressed: signUpUser,
                                   child: const Text(
                                     "Sign Up",
-                                    style: TextStyle(color: Colors.white),
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w600,
+                                    ),
                                   ),
                                 ),
                         ),
                       ),
                     ),
-                    const SizedBox(height: 10),
+
+                    SizedBox(height: isSmallScreen ? 8 : 10),
+
                     FadeAnimation(
                       2,
                       Center(
@@ -214,15 +285,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             Navigator.pushReplacement(
                               context,
                               MaterialPageRoute(
-                                builder: (context) => const LoginScreen(),
-                              ),
+                                  builder: (_) => const LoginScreen()),
                             );
                           },
                           child: const Text(
                             "Already have an account? Login",
                             style: TextStyle(
-                              color: Color.fromRGBO(49, 39, 79, .6),
-                            ),
+                                color: Color.fromRGBO(49, 39, 79, .6)),
                           ),
                         ),
                       ),
@@ -235,97 +304,5 @@ class _RegisterScreenState extends State<RegisterScreen> {
         ),
       ),
     );
-  }
-
-  void signUpUser() async {
-    if (_formKey.currentState!.validate()) {
-      try {
-        setState(() {
-          isLoading = true;
-        });
-
-        UserCredential? userCredential = await authentication.signUp(
-          email: emailController.text.trim(),
-          password: passwordController.text.trim(),
-        );
-
-        if (userCredential != null) {
-          await authentication.storeUserData(
-            name: nameController.text,
-            email: emailController.text,
-            phone: phoneController.text,
-            address: addressController.text,
-            role: selectedRole,
-          );
-          setState(() {
-            currentUser = userCredential.user;
-          });
-
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Signup Successful')),
-          );
-
-          Widget switchRoleScreeen;
-
-          switch (selectedRole) {
-            case "vet":
-              switchRoleScreeen = const VetScreen();
-              break;
-            case "shelter":
-              switchRoleScreeen = const ShelterScreen();
-              break;
-            default:
-              switchRoleScreeen = const Home();
-          }
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (context) => switchRoleScreeen),
-          );
-        }
-      } on FirebaseAuthException catch (e) {
-        if (e.code == 'email-already-in-use') {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text(
-                  "This email is already registered. Please login instead."),
-              backgroundColor: Colors.red,
-            ),
-          );
-        } else if (e.code == 'weak-password') {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content:
-                  Text("Password is too weak. Please use a stronger password."),
-              backgroundColor: Colors.red,
-            ),
-          );
-        } else if (e.code == 'invalid-email') {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text("Invalid email address."),
-              backgroundColor: Colors.red,
-            ),
-          );
-        } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text("Signup Failed: ${e.message}"),
-              backgroundColor: Colors.red,
-            ),
-          );
-        }
-      } catch (e) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text("Unexpected error: $e"),
-            backgroundColor: Colors.red,
-          ),
-        );
-      } finally {
-        setState(() {
-          isLoading = false;
-        });
-      }
-    }
   }
 }

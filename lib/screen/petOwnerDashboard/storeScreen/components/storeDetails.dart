@@ -1,9 +1,9 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:pet_care/consts/colors.dart';
 import 'package:pet_care/consts/firebase_consts.dart';
 import 'package:pet_care/consts/styles.dart';
+import 'package:pet_care/consts/theme_constant.dart';
 import 'package:pet_care/screen/petOwnerDashboard/storeScreen/components/item_details.dart';
 
 class StoreDetails extends StatelessWidget {
@@ -12,9 +12,22 @@ class StoreDetails extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isSmallScreen = screenWidth < 600;
+
     return Scaffold(
       appBar: AppBar(
-        title: Text(title, style: const TextStyle(fontFamily: bold)),
+        title: Text(
+          title,
+          style: TextStyle(
+            fontFamily: bold,
+            fontSize: isSmallScreen ? 18 : 20,
+            color: AppTheme.primaryColor,
+          ),
+        ),
+        backgroundColor: Colors.white,
+        foregroundColor: AppTheme.primaryColor,
+        elevation: 1,
       ),
       body: StreamBuilder(
         stream: FirebaseFirestore.instance
@@ -23,23 +36,37 @@ class StoreDetails extends StatelessWidget {
             .snapshots(),
         builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
+            return Center(
+              child: CircularProgressIndicator(
+                valueColor:
+                    AlwaysStoppedAnimation<Color>(AppTheme.primaryColor),
+              ),
+            );
           }
           if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-            return const Center(child: Text("No Products Found"));
+            return Center(
+              child: Text(
+                "No Products Found",
+                style: TextStyle(
+                  fontFamily: semibold,
+                  fontSize: isSmallScreen ? 14 : 16,
+                  color: Colors.grey[600],
+                ),
+              ),
+            );
           }
 
           var products = snapshot.data!.docs;
 
           return GridView.builder(
-            padding: const EdgeInsets.all(12),
+            padding: EdgeInsets.all(isSmallScreen ? 8 : 12),
             physics: const BouncingScrollPhysics(),
             itemCount: products.length,
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2,
-              mainAxisSpacing: 12,
-              crossAxisSpacing: 12,
-              mainAxisExtent: 260,
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: isSmallScreen ? 2 : 2,
+              mainAxisSpacing: isSmallScreen ? 8 : 12,
+              crossAxisSpacing: isSmallScreen ? 8 : 12,
+              mainAxisExtent: isSmallScreen ? 240 : 260,
             ),
             itemBuilder: (context, index) {
               var product = products[index];
@@ -58,15 +85,14 @@ class StoreDetails extends StatelessWidget {
                 child: Container(
                   decoration: BoxDecoration(
                     color: Colors.white,
-                    border: Border.all(color: whiteColor),
+                    borderRadius: BorderRadius.circular(12),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.grey.withOpacity(0.3),
+                        color: Colors.grey.withOpacity(0.2),
                         blurRadius: 6,
-                        offset: const Offset(0, 2),
+                        offset: const Offset(0, 3),
                       ),
                     ],
-                    borderRadius: BorderRadius.circular(8),
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -74,17 +100,28 @@ class StoreDetails extends StatelessWidget {
                       Expanded(
                         child: ClipRRect(
                           borderRadius: const BorderRadius.vertical(
-                              top: Radius.circular(8)),
-                          child: Image.memory(
-                            base64Decode(product["p_image"]),
-                            fit: BoxFit.cover,
-                            width: double.infinity,
-                          ),
+                              top: Radius.circular(12)),
+                          child: product["p_image"] != null &&
+                                  product["p_image"].toString().isNotEmpty
+                              ? Image.memory(
+                                  base64Decode(product["p_image"]),
+                                  fit: BoxFit.cover,
+                                  width: double.infinity,
+                                )
+                              : Container(
+                                  color: Colors.grey[200],
+                                  child: Icon(
+                                    Icons.shopping_bag,
+                                    size: 40,
+                                    color: Colors.grey[400],
+                                  ),
+                                ),
                         ),
                       ),
                       Padding(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 8, vertical: 6),
+                        padding: EdgeInsets.symmetric(
+                            horizontal: isSmallScreen ? 8 : 10,
+                            vertical: isSmallScreen ? 8 : 10),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
@@ -92,16 +129,18 @@ class StoreDetails extends StatelessWidget {
                               product["p_name"],
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(
-                                  fontFamily: semibold, fontSize: 14),
+                              style: TextStyle(
+                                  fontFamily: semibold,
+                                  fontSize: isSmallScreen ? 13 : 14),
                             ),
-                            const SizedBox(height: 4),
+                            SizedBox(height: isSmallScreen ? 4 : 6),
                             Text(
                               "Rs: ${product["p_price"]}",
-                              style: const TextStyle(
-                                  fontFamily: bold,
-                                  fontSize: 14,
-                                  color: redColor),
+                              style: TextStyle(
+                                fontFamily: bold,
+                                fontSize: isSmallScreen ? 14 : 15,
+                                color: AppTheme.primaryColor,
+                              ),
                             ),
                           ],
                         ),
