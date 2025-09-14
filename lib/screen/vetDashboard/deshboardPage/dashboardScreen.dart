@@ -9,22 +9,14 @@ class VetDashboard extends StatelessWidget {
 
   VetDashboard({super.key});
 
-  /// Today’s Appointments Stream
+  /// All Appointments Stream (no date filter)
   Stream<List<Map<String, dynamic>>> getAppointments() {
     final user = _auth.currentUser;
     if (user == null) return const Stream.empty();
 
-    final now = DateTime.now();
-    final startOfDay = DateTime(now.year, now.month, now.day);
-    final endOfDay = DateTime(now.year, now.month, now.day, 23, 59, 59);
-
     return _firestore
         .collection('appointments')
         .where('Veterinarian_Id', isEqualTo: user.uid)
-        .where('Scheduled_DateTime',
-            isGreaterThanOrEqualTo: Timestamp.fromDate(startOfDay))
-        .where('Scheduled_DateTime',
-            isLessThanOrEqualTo: Timestamp.fromDate(endOfDay))
         .snapshots()
         .map((snapshot) => snapshot.docs.map((doc) {
               final data = doc.data() as Map<String, dynamic>;
@@ -62,7 +54,7 @@ class VetDashboard extends StatelessWidget {
           children: [
             Text(breed),
             const SizedBox(height: 4),
-            Text(reason, style: TextStyle(color: Colors.grey[600])),
+            Text(reason, style: TextStyle(color: Colors.grey)),
           ],
         ),
         trailing: Column(
@@ -105,7 +97,7 @@ class VetDashboard extends StatelessWidget {
           ),
           const SizedBox(height: 20),
           const Text(
-            "Today's Appointments",
+            "All Appointments",
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
@@ -122,7 +114,7 @@ class VetDashboard extends StatelessWidget {
                 return const Center(child: CircularProgressIndicator());
               }
               if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                return const Text("No appointments for today.");
+                return const Text("No appointments found.");
               }
 
               final appointments = snapshot.data!;
@@ -133,7 +125,8 @@ class VetDashboard extends StatelessWidget {
                   if (appointment['Scheduled_DateTime'] != null) {
                     final ts = appointment['Scheduled_DateTime'];
                     if (ts is Timestamp) {
-                      formattedDate = DateFormat("hh:mm a").format(ts.toDate());
+                      formattedDate = DateFormat("dd MMM yyyy, hh:mm a")
+                          .format(ts.toDate());
                     }
                   }
 
@@ -163,8 +156,7 @@ class VetDashboard extends StatelessWidget {
                         petName,
                         breed,
                         formattedDate,
-                        appointment['Scheduled_Notes'] ??
-                            "", // Use Scheduled_Notes
+                        appointment['Scheduled_Notes'] ?? "",
                         appointment['Status'] ?? "pending",
                       );
                     },
@@ -204,7 +196,7 @@ class VetDashboard extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           const Text(
-            "Your Today's Appointments",
+            "Here are all your appointments",
             style: TextStyle(
               fontSize: 16,
               color: Colors.white70,

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:pet_care/consts/colors.dart';
 
 class ViewAllScreen extends StatelessWidget {
   final String title;
@@ -18,12 +19,13 @@ class ViewAllScreen extends StatelessWidget {
     final isSmallScreen = screenWidth < 600;
     final crossAxisCount = isSmallScreen ? 2 : 3;
     final spacing = isSmallScreen ? 12.0 : 16.0;
-    
+
     return Scaffold(
       appBar: AppBar(
         title: Text(title),
         backgroundColor: const Color.fromRGBO(49, 39, 79, 1),
         foregroundColor: Colors.white,
+        iconTheme: IconThemeData(color: whiteColor),
       ),
       body: Padding(
         padding: EdgeInsets.all(isSmallScreen ? 12.0 : 16.0),

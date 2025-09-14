@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:pet_care/consts/colors.dart';
 
 class ScheduleAppointmentPage extends StatefulWidget {
   final String appointmentId;
@@ -100,7 +101,11 @@ class _ScheduleAppointmentPageState extends State<ScheduleAppointmentPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Add Schedule"),
+        title: const Text(
+          "Add Schedule",
+          style: TextStyle(color: whiteColor),
+        ),
+        iconTheme: IconThemeData(color: whiteColor),
         backgroundColor: Colors.deepPurple,
       ),
       body: _appointmentData == null
@@ -134,7 +139,10 @@ class _ScheduleAppointmentPageState extends State<ScheduleAppointmentPage> {
                           onPressed: _pickDateTime,
                           style: ElevatedButton.styleFrom(
                               backgroundColor: Colors.deepPurple),
-                          child: const Text("Pick Date & Time"),
+                          child: const Text(
+                            "Pick Date & Time",
+                            style: TextStyle(color: whiteColor),
+                          ),
                         ),
                       ],
                     ),
@@ -183,7 +191,10 @@ class _ScheduleAppointmentPageState extends State<ScheduleAppointmentPage> {
                           backgroundColor: Colors.deepPurple,
                           padding: const EdgeInsets.symmetric(vertical: 14),
                         ),
-                        child: const Text("Save Schedule"),
+                        child: const Text(
+                          "Save Schedule",
+                          style: TextStyle(color: whiteColor),
+                        ),
                       ),
                     ),
                   ],
