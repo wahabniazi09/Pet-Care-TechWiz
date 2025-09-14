@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -230,9 +229,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
     return Padding(
       padding: EdgeInsets.symmetric(
-        horizontal: isSmallScreen ? 16 : 20,
-        vertical: isSmallScreen ? 12 : 16,
-      ),
+          horizontal: isSmallScreen ? 16 : 20,
+          vertical: isSmallScreen ? 12 : 16),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -250,7 +248,7 @@ class _HomeScreenState extends State<HomeScreen> {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (_) => ViewAllScreen(
+                  builder: (_) => ViewAllScreen<T>(
                     title: title,
                     items: items,
                     itemBuilder: itemBuilder,
@@ -271,76 +269,101 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _animalCard(dynamic animalItem) {
-    final animal = animalItem as Map<String, dynamic>;
+  Widget _animalCard(Map<String, dynamic> animal) {
     final screenWidth = MediaQuery.of(context).size.width;
     final isSmallScreen = screenWidth < 600;
 
     return Container(
-      width: double.infinity,
-      margin: EdgeInsets.all(8),
+      width: isSmallScreen ? 220 : 260,
+      margin: EdgeInsets.only(right: isSmallScreen ? 12 : 16),
       decoration: _cardDecoration(),
-      child: Stack(
-      children: [
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _imageBuilder(animal["animal_image"], isSmallScreen ? 150 : 180, Icons.pets),
-            Padding(
-              padding: EdgeInsets.all(8.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    animal["animal_name"] ?? "Unknown",
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                  Text(animal["breed"] ?? "Mixed Breed"),
-                ],
-              ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _imageBuilder(
+              animal["animal_image"], isSmallScreen ? 150 : 180, Icons.pets),
+          Padding(
+            padding: EdgeInsets.all(isSmallScreen ? 8.0 : 12.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(animal["animal_name"] ?? "Unknown",
+                    style: TextStyle(
+                        fontSize: isSmallScreen ? 16 : 20,
+                        fontWeight: FontWeight.bold),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis),
+                const SizedBox(height: 4),
+                Text(animal["breed"] ?? "Mixed Breed",
+                    style: TextStyle(
+                      color: Colors.grey[600],
+                      fontSize: isSmallScreen ? 12 : 14,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis),
+                const SizedBox(height: 4),
+                Row(
+                  children: [
+                    Icon(Icons.location_on,
+                        size: isSmallScreen ? 12 : 14,
+                        color: Colors.deepOrange),
+                    const SizedBox(width: 4),
+                    Expanded(
+                      child: Text(animal["location"] ?? "Unknown location",
+                          style: TextStyle(
+                              color: Colors.grey[600],
+                              fontSize: isSmallScreen ? 10 : 12),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis),
+                    ),
+                  ],
+                ),
+              ],
             ),
-          ],
-        ),
-        if (animal["isCancelled"] == true)
-          Positioned(
-            bottom: 0,
-            left: 0,
-            right: 0,
-            child: Container(
-              padding: EdgeInsets.symmetric(vertical: 4),
-              decoration: BoxDecoration(
-                color: Colors.yellow,
-                borderRadius: BorderRadius.vertical(
-                  bottom: Radius.circular(16),
-                ),
-              ),
-              child: Text(
-                "ADOPTION CANCELLED",
-                style: TextStyle(
-                  color: Colors.black,
-                  fontWeight: FontWeight.bold,
-                  fontSize: isSmallScreen ? 10 : 12,
-                ),
-                textAlign: TextAlign.center,
+          ),
+          const Spacer(),
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: isSmallScreen ? 8.0 : 12.0),
+            child: SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                onPressed: () {
+                  if (!_isLoggedIn()) {
+                    AppNotifier.showSnack(
+                      context,
+                      message: "Please login to adopt an animal",
+                      isError: true,
+                    );
+                    return;
+                  }
+                  _navigateToPetDetails(animal);
+                },
+                icon: const Icon(Icons.favorite_border, size: 16),
+                label: Text("Adopt Now",
+                    style: TextStyle(fontSize: isSmallScreen ? 12 : 14)),
+                style: _buttonStyle(),
               ),
             ),
           ),
-      ],
-    ),
+          SizedBox(height: isSmallScreen ? 8 : 12),
+        ],
+      ),
     );
   }
 
   Widget _blogCard(dynamic blogItem) {
-    final blog =
-        (blogItem as Map<String, dynamic>)['data'] as Map<String, dynamic>;
-    final blogId = (blogItem)['id'] as String;
     final screenWidth = MediaQuery.of(context).size.width;
     final isSmallScreen = screenWidth < 600;
+    final blog = blogItem['data'] as Map<String, dynamic>;
+    final blogId = blogItem['id'] as String;
 
     return Container(
       width: isSmallScreen ? 200 : 240,
       margin: EdgeInsets.only(right: isSmallScreen ? 12 : 16),
       decoration: _cardDecoration(),
+      constraints: BoxConstraints(
+        minHeight: isSmallScreen ? 380 : 420,
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -410,15 +433,17 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                   const SizedBox(height: 8),
                   Expanded(
-                    child: Text(
-                        blog["excerpt"] ??
-                            "Read this interesting blog post about pet care...",
-                        style: TextStyle(
-                            color: Colors.grey[700],
-                            fontSize: isSmallScreen ? 10 : 12,
-                            height: 1.4),
-                        maxLines: 3,
-                        overflow: TextOverflow.ellipsis),
+                    child: SingleChildScrollView(
+                      child: Text(
+                          blog["excerpt"] ??
+                              "Read this interesting blog post about pet care...",
+                          style: TextStyle(
+                              color: Colors.grey[700],
+                              fontSize: isSmallScreen ? 10 : 12,
+                              height: 1.4),
+                          maxLines: 3,
+                          overflow: TextOverflow.ellipsis),
+                    ),
                   ),
                   const SizedBox(height: 12),
                   SizedBox(
@@ -441,8 +466,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _productCard(dynamic productItem) {
-    final product = productItem as Map<String, dynamic>;
+  Widget _productCard(Map<String, dynamic> product) {
     final screenWidth = MediaQuery.of(context).size.width;
     final isSmallScreen = screenWidth < 600;
 
@@ -484,8 +508,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           const Spacer(),
           Padding(
-            padding:
-                EdgeInsets.symmetric(horizontal: isSmallScreen ? 8.0 : 12.0),
+            padding: EdgeInsets.symmetric(horizontal: isSmallScreen ? 8.0 : 12.0),
             child: SizedBox(
               width: double.infinity,
               child: ElevatedButton(
@@ -516,8 +539,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _vetCard(dynamic vetItem) {
-    final vet = vetItem as Map<String, dynamic>;
+  Widget _vetCard(Map<String, dynamic> vet) {
     final screenWidth = MediaQuery.of(context).size.width;
     final isSmallScreen = screenWidth < 600;
 
@@ -529,7 +551,7 @@ class _HomeScreenState extends State<HomeScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _imageBuilder(
-              vet["photoUrl"], isSmallScreen ? 120 : 140, Icons.person),
+              vet["profilePic"], isSmallScreen ? 120 : 140, Icons.person),
           Padding(
             padding: EdgeInsets.all(isSmallScreen ? 8.0 : 12.0),
             child: Column(
@@ -588,51 +610,19 @@ class _HomeScreenState extends State<HomeScreen> {
       );
 
   Widget _imageBuilder(
-      String? imageData, double height, IconData fallbackIcon) {
-    if (imageData == null || imageData.isEmpty) {
-      return _fallbackWidget(height, fallbackIcon);
-    }
-
-    if (imageData.startsWith('data')) {
-      return ClipRRect(
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
-        child: Image.network(
-          imageData,
-          height: height,
-          width: double.infinity,
-          fit: BoxFit.cover,
-          errorBuilder: (context, error, stackTrace) =>
-              _fallbackWidget(height, fallbackIcon),
-        ),
-      );
-    }
-
-    try {
-      return ClipRRect(
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
-        child: Image.memory(
-          base64Decode(imageData),
-          height: height,
-          width: double.infinity,
-          fit: BoxFit.cover,
-          errorBuilder: (context, error, stackTrace) =>
-              _fallbackWidget(height, fallbackIcon),
-        ),
-      );
-    } catch (e) {
-      // If decoding fails, show fallback
-      return _fallbackWidget(height, fallbackIcon);
-    }
-  }
-
-  Widget _fallbackWidget(double height, IconData fallbackIcon) {
-    return Container(
-      height: height,
-      width: double.infinity,
-      color: Colors.grey[100],
-      child: Center(
-        child: Icon(fallbackIcon, size: 40, color: Colors.grey[400]),
-      ),
+      String? base64Img, double height, IconData fallbackIcon) {
+    return ClipRRect(
+      borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+      child: base64Img != null
+          ? Image.memory(base64Decode(base64Img),
+              height: height, width: double.infinity, fit: BoxFit.cover)
+          : Container(
+              height: height,
+              width: double.infinity,
+              color: Colors.grey[100],
+              child: Center(
+                  child: Icon(fallbackIcon, size: 40, color: Colors.grey[400])),
+            ),
     );
   }
 
@@ -655,6 +645,7 @@ class _HomeScreenState extends State<HomeScreen> {
           slivers: [
             _buildAppBar(),
             _buildHeroSection(),
+
             StreamBuilder<QuerySnapshot>(
               stream: FirebaseFirestore.instance
                   .collection("users")
@@ -676,8 +667,10 @@ class _HomeScreenState extends State<HomeScreen> {
                 );
               },
             ),
+
             SliverToBoxAdapter(
                 child: SizedBox(height: isSmallScreen ? 16 : 24)),
+
             StreamBuilder<QuerySnapshot>(
               stream: FirebaseFirestore.instance
                   .collection(animalCollection)
@@ -700,8 +693,10 @@ class _HomeScreenState extends State<HomeScreen> {
                 );
               },
             ),
+
             SliverToBoxAdapter(
                 child: SizedBox(height: isSmallScreen ? 16 : 24)),
+
             StreamBuilder<QuerySnapshot>(
               stream:
                   FirebaseFirestore.instance.collection("products").snapshots(),
@@ -723,8 +718,10 @@ class _HomeScreenState extends State<HomeScreen> {
                 );
               },
             ),
+
             SliverToBoxAdapter(
                 child: SizedBox(height: isSmallScreen ? 16 : 24)),
+
             StreamBuilder<QuerySnapshot>(
               stream:
                   FirebaseFirestore.instance.collection("blogs").snapshots(),
@@ -747,6 +744,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 );
               },
             ),
+
             SliverToBoxAdapter(
                 child: SizedBox(height: isSmallScreen ? 16 : 24)),
           ],
@@ -756,20 +754,19 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget vetsCarousel(List<Map<String, dynamic>> vets) {
-  final screenWidth = MediaQuery.of(context).size.width;
-  final isSmallScreen = screenWidth < 600;
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isSmallScreen = screenWidth < 600;
 
-  return SizedBox(
-    height: isSmallScreen ? 300 : 340,
-    child: ListView.builder(
-      scrollDirection: Axis.horizontal,
-      padding: EdgeInsets.symmetric(horizontal: isSmallScreen ? 12 : 16),
-      itemCount: vets.length,
-      itemBuilder: (context, index) => _vetCard(vets[index]),
-    ),
-  );
-}
-
+    return SizedBox(
+      height: isSmallScreen ? 260 : 300,
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        padding: EdgeInsets.symmetric(horizontal: isSmallScreen ? 12 : 16),
+        itemCount: vets.length,
+        itemBuilder: (context, index) => _vetCard(vets[index]),
+      ),
+    );
+  }
 
   Widget animalCarousel(List<Map<String, dynamic>> animals) {
     final screenWidth = MediaQuery.of(context).size.width;
@@ -786,35 +783,33 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-Widget productsCarousel(List<Map<String, dynamic>> products) {
-  final screenWidth = MediaQuery.of(context).size.width;
-  final isSmallScreen = screenWidth < 600;
+  Widget productsCarousel(List<Map<String, dynamic>> products) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isSmallScreen = screenWidth < 600;
 
-  return SizedBox(
-    height: isSmallScreen ? 300 : 340,
-    child: ListView.builder(
-      scrollDirection: Axis.horizontal,
-      padding: EdgeInsets.symmetric(horizontal: isSmallScreen ? 12 : 16),
-      itemCount: products.length,
-      itemBuilder: (context, index) => _productCard(products[index]),
-    ),
-  );
-}
+    return SizedBox(
+      height: isSmallScreen ? 320 : 360,
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        padding: EdgeInsets.symmetric(horizontal: isSmallScreen ? 12 : 16),
+        itemCount: products.length,
+        itemBuilder: (context, index) => _productCard(products[index]),
+      ),
+    );
+  }
 
+  Widget blogsCarousel(List<dynamic> blogs) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isSmallScreen = screenWidth < 600;
 
-Widget blogsCarousel(List<Map<String, dynamic>> blogs) {
-  final screenWidth = MediaQuery.of(context).size.width;
-  final isSmallScreen = screenWidth < 600;
-
-  return SizedBox(
-    height: isSmallScreen ? 380 : 420,
-    child: ListView.builder(
-      scrollDirection: Axis.horizontal,
-      padding: EdgeInsets.symmetric(horizontal: isSmallScreen ? 12 : 16),
-      itemCount: blogs.length,
-      itemBuilder: (context, index) => _blogCard(blogs[index]),
-    ),
-  );
-}
-
+    return SizedBox(
+      height: isSmallScreen ? 420 : 460,
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        padding: EdgeInsets.symmetric(horizontal: isSmallScreen ? 12 : 16),
+        itemCount: blogs.length,
+        itemBuilder: (context, index) => _blogCard(blogs[index]),
+      ),
+    );
+  }
 }
