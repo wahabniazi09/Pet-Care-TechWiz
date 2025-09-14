@@ -6,8 +6,6 @@ import 'package:pet_care/screen/shelterDashboard/shelterScreen.dart';
 import 'package:pet_care/screen/login_register_screen/loginScreen.dart';
 import 'package:pet_care/screen/petOwnerDashboard/homeScreen/homeNav.dart';
 import 'package:pet_care/consts/theme_constant.dart';
-import 'package:pet_care/screen/login_register_screen/loginScreen.dart';
-import 'package:pet_care/screen/shelterDashboard/shelterScreen.dart';
 import 'package:pet_care/screen/vetDashboard/vetScreen.dart';
 import 'package:pet_care/screen/widgets/custom_form.dart';
 import 'package:pet_care/screen/widgets/snackBar.dart';
@@ -55,6 +53,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
           password: passwordController.text.trim(),
         );
 
+        
         if (userCredential != null) {
           await authentication.storeUserData(
             name: nameController.text,

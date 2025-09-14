@@ -83,7 +83,7 @@ class _ShelterScreenState extends State<ShelterScreen> {
   String _getAppBarTitle() {
     switch (_currentIndex) {
       case 0:
-        return "Home";
+        return "Adoption Requests";
       case 1:
         return "Animals";
       case 2:

@@ -5,9 +5,7 @@ import 'package:intl/intl.dart';
 import 'package:pet_care/consts/firebase_consts.dart';
 import 'package:pet_care/screen/vetDashboard/appointmentPage/scheduleAppointmentPage.dart';
 
-/// ---------------------------
-/// VET SIDE - View Appointments
-/// ---------------------------
+
 class VetAppointmentsScreen extends StatefulWidget {
   const VetAppointmentsScreen({super.key});
 
@@ -101,7 +99,7 @@ class _VetAppointmentsScreenState extends State<VetAppointmentsScreen> {
     );
   }
 
-  /// Card widget for appointment
+  
   Widget _buildAppointmentCard(String appointmentId, String petName,
       String breed, String dateTime, String reason, String status) {
     Color statusColor;

@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:pet_care/screen/shelterDashboard/shelterHome/adoptrequestPage.dart';
 import 'package:pet_care/consts/colors.dart';
+import 'package:intl/intl.dart';
 
 class Shelterhomepage extends StatelessWidget {
   const Shelterhomepage({super.key});
@@ -13,25 +14,7 @@ class Shelterhomepage extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: const Color(0xFFF8F9FA),
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 4,
-        centerTitle: true,
-        shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(
-            bottom: Radius.circular(16),
-          ),
-        ),
-        title: const Text(
-          "Adoption Requests",
-          style: TextStyle(
-            fontWeight: FontWeight.w700,
-            fontSize: 20,
-            color: Color(0xFF5425A5),
-          ),
-        ),
-        iconTheme: const IconThemeData(color: Color(0xFF5425A5)),
-      ),
+    
       body: StreamBuilder<QuerySnapshot>(
         stream: FirebaseFirestore.instance
             .collection('adoption_requests')
@@ -53,15 +36,24 @@ class Shelterhomepage extends StatelessWidget {
                 children: [
                   Icon(
                     Icons.error_outline,
-                    size: 50,
+                    size: 60,
                     color: Colors.grey[400],
                   ),
                   const SizedBox(height: 16),
                   const Text(
-                    "Error loading requests",
+                    "Something went wrong",
                     style: TextStyle(
                       fontSize: 18,
                       color: Colors.grey,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    "Please try again later",
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Colors.grey[500],
                     ),
                   ),
                 ],
@@ -74,28 +66,33 @@ class Shelterhomepage extends StatelessWidget {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(
-                    Icons.pets,
-                    size: 60,
+                  Image.asset(
+                    'assets/images/no_requests.png', // You can add this asset
+                    width: 150,
+                    height: 150,
                     color: Colors.grey[300],
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 24),
                   const Text(
                     "No adoption requests yet",
                     style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w500,
+                      fontSize: 20,
+                      fontWeight: FontWeight.w600,
                       color: Colors.grey,
                     ),
                   ),
-                  const SizedBox(height: 8),
-                  Text(
-                    "Requests will appear here when users apply",
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.grey[500],
+                  const SizedBox(height: 12),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 40),
+                    child: Text(
+                      "When users apply to adopt your pets, their requests will appear here",
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.grey[500],
+                        height: 1.4,
+                      ),
+                      textAlign: TextAlign.center,
                     ),
-                    textAlign: TextAlign.center,
                   ),
                 ],
               ),
@@ -111,18 +108,22 @@ class Shelterhomepage extends StatelessWidget {
               final doc = requests[index];
               final request = doc.data() as Map<String, dynamic>;
 
-              // Get status color
+              // Get status color and icon
               Color statusColor;
+              IconData statusIcon;
               switch (request['status']) {
                 case 'Approved':
                   statusColor = Colors.green;
+                  statusIcon = Icons.check_circle;
                   break;
                 case 'Rejected':
                   statusColor = Colors.red;
+                  statusIcon = Icons.cancel;
                   break;
                 case 'Pending':
                 default:
                   statusColor = Colors.orange;
+                  statusIcon = Icons.access_time;
               }
 
               return Container(
@@ -132,90 +133,137 @@ class Shelterhomepage extends StatelessWidget {
                   borderRadius: BorderRadius.circular(16),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.grey.withOpacity(0.1),
-                      blurRadius: 10,
-                      offset: const Offset(0, 5),
+                      color: Colors.grey.withOpacity(0.15),
+                      blurRadius: 12,
+                      offset: const Offset(0, 4),
                     ),
                   ],
                 ),
-                child: ListTile(
-                  contentPadding: const EdgeInsets.all(16),
-                  leading: Container(
-                    width: 50,
-                    height: 50,
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF5425A5).withOpacity(0.1),
-                      shape: BoxShape.circle,
-                    ),
-                    child: Icon(
-                      Icons.pets,
-                      color: Color(0xFF5425A5),
-                    ),
-                  ),
-                  title: Text(
-                    request['petName'] ?? "Unknown Pet",
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
-                    ),
-                  ),
-                  subtitle: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const SizedBox(height: 4),
-                      Text(
-                        "Applicant: ${request['applicantName'] ?? 'Unknown'}",
-                        style: TextStyle(
-                          color: Colors.grey[600],
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Row(
-                        children: [
-                          Icon(
-                            Icons.calendar_today,
-                            size: 14,
-                            color: Colors.grey[500],
+                child: Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(16),
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => AdoptionRequestDetailsPage(
+                            docId: doc.id,
+                            request: request,
                           ),
-                          const SizedBox(width: 4),
-                          Text(
-                            _formatDate(request['timestamp']),
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: Colors.grey[500],
+                        ),
+                      );
+                    },
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Pet icon with colored background
+                          Container(
+                            width: 50,
+                            height: 50,
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF5425A5).withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Icon(
+                              Icons.pets,
+                              color: const Color(0xFF5425A5),
+                              size: 28,
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          
+                          // Request details
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  request['petName'] ?? "Unknown Pet",
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                    color: Color(0xFF333333),
+                                  ),
+                                ),
+                                const SizedBox(height: 6),
+                                
+                                // Applicant name
+                                Row(
+                                  children: [
+                                    Icon(
+                                      Icons.person,
+                                      size: 14,
+                                      color: Colors.grey[600],
+                                    ),
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      request['applicantName'] ?? 'Unknown User',
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                        color: Colors.grey[600],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 6),
+                                
+                                // Request date
+                                Row(
+                                  children: [
+                                    Icon(
+                                      Icons.calendar_today,
+                                      size: 14,
+                                      color: Colors.grey[600],
+                                    ),
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      _formatDate(request['timestamp']),
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        color: Colors.grey[600],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                          
+                          // Status badge
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 12, vertical: 6),
+                            decoration: BoxDecoration(
+                              color: statusColor.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  statusIcon,
+                                  size: 14,
+                                  color: statusColor,
+                                ),
+                                const SizedBox(width: 4),
+                                Text(
+                                  request['status'] ?? "Pending",
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.w600,
+                                    color: statusColor,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
                         ],
                       ),
-                    ],
-                  ),
-                  trailing: Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                    decoration: BoxDecoration(
-                      color: statusColor.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Text(
-                      request['status'] ?? "Pending",
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        color: statusColor,
-                        fontSize: 12,
-                      ),
                     ),
                   ),
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => AdoptionRequestDetailsPage(
-                          docId: doc.id,
-                          request: request,
-                        ),
-                      ),
-                    );
-                  },
                 ),
               );
             },
@@ -231,7 +279,7 @@ class Shelterhomepage extends StatelessWidget {
     try {
       if (timestamp is Timestamp) {
         DateTime date = timestamp.toDate();
-        return "${date.day}/${date.month}/${date.year}";
+        return DateFormat('MMM dd, yyyy').format(date);
       } else if (timestamp is String) {
         return timestamp;
       }

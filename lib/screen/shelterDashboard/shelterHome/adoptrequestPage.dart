@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:pet_care/consts/consts.dart';
 
 class AdoptionRequestDetailsPage extends StatelessWidget {
   final String docId;
@@ -51,7 +52,6 @@ class AdoptionRequestDetailsPage extends StatelessWidget {
         child: ListView(
           children: [
             detailRow("Pet Name", request['petName'] ?? "N/A"),
-            detailRow("Pet ID", request['petId'] ?? "N/A"),
             detailRow("Applicant", request['applicantName'] ?? "N/A"),
             detailRow("Phone", request['applicantPhone'] ?? "N/A"),
             detailRow("Email", request['applicantEmail'] ?? "N/A"),
@@ -63,28 +63,23 @@ class AdoptionRequestDetailsPage extends StatelessWidget {
                 (request['hasOtherPets'] == true) ? "Yes" : "No"),
             detailRow("Experience", request['experience'] ?? "N/A"),
             detailRow("Status", request['status'] ?? "Pending"),
-            // detailRow(
-            //   "Submission Date",
-            //   request['submissionDate'] != null
-            //       ? (request['submissionDate'] as Timestamp).toDate().toString()
-            //       : "N/A",
-            // ),
+            
             const SizedBox(height: 20),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
                 ElevatedButton.icon(
                   onPressed: () async {
-                    await updateRequestStatus(docId, "Approved");
+                    await updateRequestStatus(docId, "Approved",);
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(content: Text("Request Approved")),
                     );
                     Navigator.pop(context);
                   },
-                  icon: const Icon(Icons.check),
-                  label: const Text("Approve"),
+                  icon: const Icon(Icons.check,color: whiteColor,),
+                  label: const Text("Approve",style: TextStyle(color: whiteColor),),
                   style:
-                      ElevatedButton.styleFrom(backgroundColor: Colors.green),
+                      ElevatedButton.styleFrom(backgroundColor: Colors.greenAccent),
                 ),
                 ElevatedButton.icon(
                   onPressed: () async {
@@ -94,9 +89,9 @@ class AdoptionRequestDetailsPage extends StatelessWidget {
                     );
                     Navigator.pop(context);
                   },
-                  icon: const Icon(Icons.close),
-                  label: const Text("Reject"),
-                  style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                  icon: const Icon(Icons.close,color: whiteColor,),
+                  label: const Text("Reject",style: TextStyle(color: whiteColor),),
+                  style: ElevatedButton.styleFrom(backgroundColor: Colors.redAccent,),
                 ),
               ],
             ),
