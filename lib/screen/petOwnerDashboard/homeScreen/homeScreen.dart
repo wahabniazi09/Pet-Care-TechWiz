@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -8,7 +9,6 @@ import 'package:pet_care/screen/petOwnerDashboard/homeScreen/petDetailsScreen.da
 import 'package:pet_care/screen/petOwnerDashboard/homeScreen/components/blogDetails.dart';
 import 'package:pet_care/screen/petOwnerDashboard/homeScreen/view_all_screen.dart';
 import 'package:pet_care/screen/petOwnerDashboard/storeScreen/components/item_details.dart';
-import 'package:pet_care/screen/widgets/snackBar.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -219,10 +219,10 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget sectionHeading<T>(
+  Widget sectionHeading(
     String title,
-    List<T> items,
-    Widget Function(T) itemBuilder,
+    List<Map<String, dynamic>> items,
+    Widget Function(Map<String, dynamic>) itemBuilder,
   ) {
     final screenWidth = MediaQuery.of(context).size.width;
     final isSmallScreen = screenWidth < 600;
@@ -248,7 +248,7 @@ class _HomeScreenState extends State<HomeScreen> {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (_) => ViewAllScreen<T>(
+                  builder: (_) => ViewAllScreen(
                     title: title,
                     items: items,
                     itemBuilder: itemBuilder,
@@ -290,17 +290,13 @@ class _HomeScreenState extends State<HomeScreen> {
                 Text(animal["animal_name"] ?? "Unknown",
                     style: TextStyle(
                         fontSize: isSmallScreen ? 16 : 20,
-                        fontWeight: FontWeight.bold),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis),
+                        fontWeight: FontWeight.bold)),
                 const SizedBox(height: 4),
                 Text(animal["breed"] ?? "Mixed Breed",
                     style: TextStyle(
                       color: Colors.grey[600],
                       fontSize: isSmallScreen ? 12 : 14,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis),
+                    )),
                 const SizedBox(height: 4),
                 Row(
                   children: [
@@ -308,41 +304,34 @@ class _HomeScreenState extends State<HomeScreen> {
                         size: isSmallScreen ? 12 : 14,
                         color: Colors.deepOrange),
                     const SizedBox(width: 4),
-                    Expanded(
-                      child: Text(animal["location"] ?? "Unknown location",
-                          style: TextStyle(
-                              color: Colors.grey[600],
-                              fontSize: isSmallScreen ? 10 : 12),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis),
-                    ),
+                    Text(animal["location"] ?? "Unknown location",
+                        style: TextStyle(
+                            color: Colors.grey[600],
+                            fontSize: isSmallScreen ? 10 : 12)),
                   ],
                 ),
               ],
             ),
           ),
           const Spacer(),
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: isSmallScreen ? 8.0 : 12.0),
-            child: SizedBox(
-              width: double.infinity,
-              child: ElevatedButton.icon(
-                onPressed: () {
-                  if (!_isLoggedIn()) {
-                    AppNotifier.showSnack(
-                      context,
-                      message: "Please login to adopt an animal",
-                      isError: true,
-                    );
-                    return;
-                  }
-                  _navigateToPetDetails(animal);
-                },
-                icon: const Icon(Icons.favorite_border, size: 16),
-                label: Text("Adopt Now",
-                    style: TextStyle(fontSize: isSmallScreen ? 12 : 14)),
-                style: _buttonStyle(),
-              ),
+          Center(
+            child: ElevatedButton.icon(
+              onPressed: () {
+                if (!_isLoggedIn()) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text("Please login to adopt an animal"),
+                      backgroundColor: Color.fromRGBO(49, 39, 79, 1),
+                    ),
+                  );
+                  return;
+                }
+                _navigateToPetDetails(animal);
+              },
+              icon: const Icon(Icons.favorite_border, size: 16),
+              label: Text("Adopt Now",
+                  style: TextStyle(fontSize: isSmallScreen ? 12 : 14)),
+              style: _buttonStyle(),
             ),
           ),
           SizedBox(height: isSmallScreen ? 8 : 12),
@@ -351,26 +340,22 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _blogCard(dynamic blogItem) {
+  Widget _blogCard(Map<String, dynamic> blog, String blogId) {
     final screenWidth = MediaQuery.of(context).size.width;
     final isSmallScreen = screenWidth < 600;
-    final blog = blogItem['data'] as Map<String, dynamic>;
-    final blogId = blogItem['id'] as String;
 
-    return Container(
-      width: isSmallScreen ? 200 : 240,
-      margin: EdgeInsets.only(right: isSmallScreen ? 12 : 16),
-      decoration: _cardDecoration(),
-      constraints: BoxConstraints(
-        minHeight: isSmallScreen ? 380 : 420,
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _imageBuilder(
-              blog["image"], isSmallScreen ? 120 : 140, Icons.article),
-          Expanded(
-            child: Padding(
+    return GestureDetector(
+      onTap: () => _navigateToBlogDetail(blog, blogId),
+      child: Container(
+        width: isSmallScreen ? 200 : 240,
+        margin: EdgeInsets.only(right: isSmallScreen ? 12 : 16),
+        decoration: _cardDecoration(),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _imageBuilder(
+                blog["image"], isSmallScreen ? 120 : 140, Icons.article),
+            Padding(
               padding: EdgeInsets.all(isSmallScreen ? 8.0 : 12.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -409,42 +394,28 @@ class _HomeScreenState extends State<HomeScreen> {
                       Text(blog["date"] ?? "Unknown date",
                           style: TextStyle(
                               color: Colors.grey[600],
-                              fontSize: isSmallScreen ? 9 : 11),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis),
-                    ],
-                  ),
-                  const SizedBox(height: 4),
-                  Row(
-                    children: [
+                              fontSize: isSmallScreen ? 9 : 11)),
+                      const SizedBox(width: 8),
                       Icon(Icons.person,
                           size: isSmallScreen ? 10 : 12,
                           color: Colors.grey[600]),
                       const SizedBox(width: 4),
-                      Expanded(
-                        child: Text(blog["author"] ?? "Unknown author",
-                            style: TextStyle(
-                                color: Colors.grey[600],
-                                fontSize: isSmallScreen ? 9 : 11),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis),
-                      ),
+                      Text(blog["author"] ?? "Unknown author",
+                          style: TextStyle(
+                              color: Colors.grey[600],
+                              fontSize: isSmallScreen ? 9 : 11)),
                     ],
                   ),
                   const SizedBox(height: 8),
-                  Expanded(
-                    child: SingleChildScrollView(
-                      child: Text(
-                          blog["excerpt"] ??
-                              "Read this interesting blog post about pet care...",
-                          style: TextStyle(
-                              color: Colors.grey[700],
-                              fontSize: isSmallScreen ? 10 : 12,
-                              height: 1.4),
-                          maxLines: 3,
-                          overflow: TextOverflow.ellipsis),
-                    ),
-                  ),
+                  Text(
+                      blog["excerpt"] ??
+                          "Read this interesting blog post about pet care...",
+                      style: TextStyle(
+                          color: Colors.grey[700],
+                          fontSize: isSmallScreen ? 10 : 12,
+                          height: 1.4),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis),
                   const SizedBox(height: 12),
                   SizedBox(
                     width: double.infinity,
@@ -460,8 +431,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 ],
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -488,15 +459,13 @@ class _HomeScreenState extends State<HomeScreen> {
                     style: TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: isSmallScreen ? 14 : 16),
-                    maxLines: 2,
+                    maxLines: 1,
                     overflow: TextOverflow.ellipsis),
                 const SizedBox(height: 6),
                 Text(product["p_category"] ?? "General",
                     style: TextStyle(
                         color: Colors.grey[600],
-                        fontSize: isSmallScreen ? 11 : 13),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis),
+                        fontSize: isSmallScreen ? 11 : 13)),
                 const SizedBox(height: 6),
                 Text("\$${product["p_price"] ?? "0"}",
                     style: TextStyle(
@@ -507,30 +476,27 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
           const Spacer(),
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: isSmallScreen ? 8.0 : 12.0),
-            child: SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: () {
-                  if (!_isLoggedIn()) {
-                    AppNotifier.showSnack(
-                      context,
-                      message: "Please login to buy Product",
-                      isError: true,
-                    );
-                    return;
-                  }
-                  Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (_) => ItemDetails(
-                              title: product["p_name"], data: product)));
-                },
-                style: _buttonStyle(),
-                child: Text("Buy Product",
-                    style: TextStyle(fontSize: isSmallScreen ? 12 : 14)),
-              ),
+          Center(
+            child: ElevatedButton(
+              onPressed: () {
+                if (!_isLoggedIn()) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text("Please login to buy Product"),
+                      backgroundColor: Color.fromRGBO(49, 39, 79, 1),
+                    ),
+                  );
+                  return;
+                }
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (_) => ItemDetails(
+                            title: product["p_name"], data: product)));
+              },
+              style: _buttonStyle(),
+              child: Text("Buy Product",
+                  style: TextStyle(fontSize: isSmallScreen ? 12 : 14)),
             ),
           ),
           SizedBox(height: isSmallScreen ? 8 : 12),
@@ -551,7 +517,7 @@ class _HomeScreenState extends State<HomeScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _imageBuilder(
-              vet["profilePic"], isSmallScreen ? 120 : 140, Icons.person),
+              vet["photoUrl"], isSmallScreen ? 120 : 140, Icons.person),
           Padding(
             padding: EdgeInsets.all(isSmallScreen ? 8.0 : 12.0),
             child: Column(
@@ -560,26 +526,22 @@ class _HomeScreenState extends State<HomeScreen> {
                 Text(vet["name"] ?? "Unnamed Vet",
                     style: TextStyle(
                         fontWeight: FontWeight.bold,
-                        fontSize: isSmallScreen ? 14 : 16),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis),
+                        fontSize: isSmallScreen ? 14 : 16)),
                 const SizedBox(height: 4),
                 Text(vet["speciality"] ?? "Veterinarian",
                     style: TextStyle(
                         color: Colors.grey[600],
-                        fontSize: isSmallScreen ? 11 : 13),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis),
+                        fontSize: isSmallScreen ? 11 : 13)),
                 const SizedBox(height: 8),
-                SizedBox(
-                  width: double.infinity,
+                Center(
                   child: ElevatedButton(
                     onPressed: () {
                       if (!_isLoggedIn()) {
-                        AppNotifier.showSnack(
-                          context,
-                          message: "Please login to book appointment",
-                          isError: true,
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text("Please login to book appointment"),
+                            backgroundColor: Color.fromRGBO(49, 39, 79, 1),
+                          ),
                         );
                         return;
                       }
@@ -610,19 +572,51 @@ class _HomeScreenState extends State<HomeScreen> {
       );
 
   Widget _imageBuilder(
-      String? base64Img, double height, IconData fallbackIcon) {
-    return ClipRRect(
-      borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
-      child: base64Img != null
-          ? Image.memory(base64Decode(base64Img),
-              height: height, width: double.infinity, fit: BoxFit.cover)
-          : Container(
-              height: height,
-              width: double.infinity,
-              color: Colors.grey[100],
-              child: Center(
-                  child: Icon(fallbackIcon, size: 40, color: Colors.grey[400])),
-            ),
+      String? imageData, double height, IconData fallbackIcon) {
+    if (imageData == null || imageData.isEmpty) {
+      return _fallbackWidget(height, fallbackIcon);
+    }
+
+    if (imageData.startsWith('data')) {
+      return ClipRRect(
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+        child: Image.network(
+          imageData,
+          height: height,
+          width: double.infinity,
+          fit: BoxFit.cover,
+          errorBuilder: (context, error, stackTrace) =>
+              _fallbackWidget(height, fallbackIcon),
+        ),
+      );
+    }
+
+    try {
+      return ClipRRect(
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+        child: Image.memory(
+          base64Decode(imageData),
+          height: height,
+          width: double.infinity,
+          fit: BoxFit.cover,
+          errorBuilder: (context, error, stackTrace) =>
+              _fallbackWidget(height, fallbackIcon),
+        ),
+      );
+    } catch (e) {
+      // If decoding fails, show fallback
+      return _fallbackWidget(height, fallbackIcon);
+    }
+  }
+
+  Widget _fallbackWidget(double height, IconData fallbackIcon) {
+    return Container(
+      height: height,
+      width: double.infinity,
+      color: Colors.grey[100],
+      child: Center(
+        child: Icon(fallbackIcon, size: 40, color: Colors.grey[400]),
+      ),
     );
   }
 
@@ -671,6 +665,7 @@ class _HomeScreenState extends State<HomeScreen> {
             SliverToBoxAdapter(
                 child: SizedBox(height: isSmallScreen ? 16 : 24)),
 
+            // ------------------- Adoption -------------------
             StreamBuilder<QuerySnapshot>(
               stream: FirebaseFirestore.instance
                   .collection(animalCollection)
@@ -697,6 +692,7 @@ class _HomeScreenState extends State<HomeScreen> {
             SliverToBoxAdapter(
                 child: SizedBox(height: isSmallScreen ? 16 : 24)),
 
+            // ------------------- Products -------------------
             StreamBuilder<QuerySnapshot>(
               stream:
                   FirebaseFirestore.instance.collection("products").snapshots(),
@@ -722,6 +718,7 @@ class _HomeScreenState extends State<HomeScreen> {
             SliverToBoxAdapter(
                 child: SizedBox(height: isSmallScreen ? 16 : 24)),
 
+            // ------------------- Blogs -------------------
             StreamBuilder<QuerySnapshot>(
               stream:
                   FirebaseFirestore.instance.collection("blogs").snapshots(),
@@ -737,7 +734,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 return SliverToBoxAdapter(
                   child: Column(
                     children: [
-                      sectionHeading("Pet Care Blogs", blogs, _blogCard),
+                      sectionHeading("Pet Care Blogs", blogs,
+                          (item) => _blogCard(item['data'], item['id'])),
                       blogs.isEmpty ? const SizedBox() : blogsCarousel(blogs),
                     ],
                   ),
@@ -798,17 +796,18 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget blogsCarousel(List<dynamic> blogs) {
+  Widget blogsCarousel(List<Map<String, dynamic>> blogs) {
     final screenWidth = MediaQuery.of(context).size.width;
     final isSmallScreen = screenWidth < 600;
 
     return SizedBox(
-      height: isSmallScreen ? 420 : 460,
+      height: isSmallScreen ? 320 : 360,
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
         padding: EdgeInsets.symmetric(horizontal: isSmallScreen ? 12 : 16),
         itemCount: blogs.length,
-        itemBuilder: (context, index) => _blogCard(blogs[index]),
+        itemBuilder: (context, index) =>
+            _blogCard(blogs[index]['data'], blogs[index]['id']),
       ),
     );
   }
