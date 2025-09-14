@@ -1,100 +1,86 @@
-import 'package:card_swiper/card_swiper.dart';
+import 'dart:convert';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:pet_care/consts/theme_constant.dart';
 
 class BlogScreen extends StatelessWidget {
   const BlogScreen({super.key});
 
-  static const List<String> blogList = [
-    'assets/images/poster1.jpg',
-    'assets/images/poster2.jpg',
-    'assets/images/poster3.jpg',
-    'assets/images/poster4.jpg',
-  ];
+  Stream<QuerySnapshot> getBlogs() {
+    return FirebaseFirestore.instance
+        .collection('blogs')
+        .where('author', isEqualTo: 'shelter')
+        .snapshots();
+  }
 
-  Widget _buildBlogCard({
-    required String text,
-    required String imagePath,
-    bool imageLeft = true,
-    required BuildContext context,
-  }) {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final isSmallScreen = screenWidth < 600;
-    
-    return Card(
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
+  Widget _buildBlogCard(
+      Map<String, dynamic> data, bool imageLeft, BuildContext context) {
+    final title = data['title'] ?? 'No Title';
+    final excerpt = data['excerpt'] ?? '';
+    final content = data['content'] ?? '';
+    final imageBase64 = data['image'] ?? '';
+    final date = data['date'] ?? '';
+
+    final imageWidget = imageBase64.isNotEmpty
+        ? ClipRRect(
+            borderRadius: BorderRadius.circular(12),
+            child: Image.memory(
+              base64Decode(imageBase64),
+              width: 100,
+              height: 150,
+              fit: BoxFit.cover,
+            ),
+          )
+        : Container(width: 100, height: 150, color: Colors.grey[300]);
+
+    final textColumn = Expanded(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(title,
+              style:
+                  const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+          const SizedBox(height: 8),
+          Text(excerpt,
+              style: const TextStyle(fontSize: 14, color: Colors.grey)),
+          const SizedBox(height: 8),
+          Text(date,
+              style:
+                  const TextStyle(fontSize: 12, fontStyle: FontStyle.italic)),
+          const SizedBox(height: 8),
+          Align(
+            alignment: Alignment.bottomRight,
+            child: TextButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => BlogDetailScreen(
+                      title: title,
+                      content: content,
+                      imageBase64: imageBase64,
+                      date: date,
+                    ),
+                  ),
+                );
+              },
+              child: const Text("Read More",
+                  style: TextStyle(color: Colors.deepPurple)),
+            ),
+          ),
+        ],
       ),
+    );
+
+    return Card(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       elevation: 4,
-      margin: EdgeInsets.symmetric(vertical: isSmallScreen ? 8 : 10),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(16),
-        onTap: () {
-          // future detail screen navigation
-        },
-        child: Padding(
-          padding: EdgeInsets.all(isSmallScreen ? 12.0 : 16.0),
-          child: isSmallScreen
-              ? Column(
-                  children: [
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(12),
-                      child: Image.asset(
-                        imagePath,
-                        width: double.infinity,
-                        height: 120,
-                        fit: BoxFit.cover,
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    Text(
-                      text,
-                      style: TextStyle(
-                        fontSize: isSmallScreen ? 14 : 16,
-                        color: Colors.black87,
-                        height: 1.5,
-                      ),
-                      textAlign: TextAlign.justify,
-                    ),
-                  ],
-                )
-              : Row(
-                  children: [
-                    if (imageLeft)
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(12),
-                        child: Image.asset(
-                          imagePath,
-                          width: 100,
-                          height: 150,
-                          fit: BoxFit.cover,
-                        ),
-                      ),
-                    SizedBox(width: isSmallScreen ? 8 : 12),
-                    Expanded(
-                      child: Text(
-                        text,
-                        style: TextStyle(
-                          fontSize: isSmallScreen ? 14 : 16,
-                          color: Colors.black87,
-                          height: 1.5,
-                        ),
-                        textAlign: TextAlign.justify,
-                      ),
-                    ),
-                    if (!imageLeft) SizedBox(width: isSmallScreen ? 8 : 12),
-                    if (!imageLeft)
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(12),
-                        child: Image.asset(
-                          imagePath,
-                          width: 100,
-                          height: 150,
-                          fit: BoxFit.cover,
-                        ),
-                      ),
-                  ],
-                ),
+      margin: const EdgeInsets.symmetric(vertical: 10),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Row(
+          children: imageLeft
+              ? [imageWidget, const SizedBox(width: 12), textColumn]
+              : [textColumn, const SizedBox(width: 12), imageWidget],
         ),
       ),
     );
@@ -102,131 +88,93 @@ class BlogScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final isSmallScreen = screenWidth < 600;
-
     return Scaffold(
       backgroundColor: Colors.grey[100],
       appBar: AppBar(
         centerTitle: true,
-        title: const Text(
-          "Blogs",
-          style: TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        backgroundColor: AppTheme.primaryColor,
-        iconTheme: const IconThemeData(color: Colors.white),
+        title: const Text("Blogs", style: TextStyle(color: Colors.white)),
+        backgroundColor: Colors.deepPurple,
+      ),
+      body: StreamBuilder<QuerySnapshot>(
+        stream: getBlogs(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
+          if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+            return const Center(child: Text("No blogs found."));
+          }
+
+          final blogs = snapshot.data!.docs;
+          bool imageLeft = true;
+
+          return SingleChildScrollView(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              children: blogs.map((doc) {
+                final data = doc.data() as Map<String, dynamic>;
+                final card = _buildBlogCard(data, imageLeft, context);
+                imageLeft = !imageLeft; // alternate image position
+                return card;
+              }).toList(),
+            ),
+          );
+        },
+      ),
+    );
+  }
+}
+
+class BlogDetailScreen extends StatelessWidget {
+  final String title;
+  final String content;
+  final String imageBase64;
+  final String date;
+
+  const BlogDetailScreen({
+    super.key,
+    required this.title,
+    required this.content,
+    required this.imageBase64,
+    required this.date,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final imageWidget = imageBase64.isNotEmpty
+        ? ClipRRect(
+            borderRadius: BorderRadius.circular(12),
+            child: Image.memory(
+              base64Decode(imageBase64),
+              width: double.infinity,
+              height: 200,
+              fit: BoxFit.cover,
+            ),
+          )
+        : Container(
+            width: double.infinity, height: 200, color: Colors.grey[300]);
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text("Blog Detail"),
+        backgroundColor: Colors.deepPurple,
       ),
       body: SingleChildScrollView(
-        padding: EdgeInsets.all(isSmallScreen ? 12.0 : 16.0),
+        padding: const EdgeInsets.all(16),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            SizedBox(
-              height: isSmallScreen ? 160 : 200,
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(16),
-                child: Swiper(
-                  itemCount: blogList.length,
-                  autoplay: true,
-                  pagination: const SwiperPagination(
-                    builder: DotSwiperPaginationBuilder(
-                      color: Colors.white54,
-                      activeColor: Colors.white,
-                      size: 8,
-                      activeSize: 10,
-                    ),
-                  ),
-                  itemBuilder: (context, index) {
-                    return Stack(
-                      fit: StackFit.expand,
-                      children: [
-                        Image.asset(
-                          blogList[index],
-                          fit: BoxFit.cover,
-                        ),
-                        Container(
-                          color: Colors.black.withOpacity(0.25),
-                        ),
-                        Align(
-                          alignment: Alignment.bottomLeft,
-                          child: Padding(
-                            padding: EdgeInsets.all(isSmallScreen ? 8.0 : 12.0),
-                            child: Text(
-                              "Pet Blog ${index + 1}",
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: isSmallScreen ? 16 : 18,
-                                fontWeight: FontWeight.bold,
-                                shadows: const [
-                                  Shadow(
-                                    color: Colors.black,
-                                    blurRadius: 4,
-                                  )
-                                ],
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    );
-                  },
-                ),
-              ),
-            ),
-
-            SizedBox(height: isSmallScreen ? 16 : 20),
-
-            Text(
-              'Welcome to Pet-Care Blogs 🐾',
-              style: TextStyle(
-                fontSize: isSmallScreen ? 18 : 22,
-                fontWeight: FontWeight.bold,
-                color: AppTheme.primaryColor,
-              ),
-              textAlign: TextAlign.center,
-            ),
-
-            SizedBox(height: isSmallScreen ? 16 : 20),
-
-            // Blogs cards
-            _buildBlogCard(
-              text:
-                  'We are a passionate team of pet lovers dedicated to bringing you helpful guides, care tips, and the latest trends in pet wellness.',
-              imagePath: 'assets/images/fdog.jpg',
-              imageLeft: true,
-              context: context,
-            ),
-            _buildBlogCard(
-              text:
-                  'From nutrition advice to grooming hacks, our blogs cover everything you need to keep your furry friends happy and healthy.',
-              imagePath: 'assets/images/fdog1.jpg',
-              imageLeft: false,
-              context: context,
-            ),
-            _buildBlogCard(
-              text:
-                  'Join our community and explore inspiring pet stories, expert care recommendations, and more.',
-              imagePath: 'assets/images/fdog2.jpg',
-              imageLeft: true,
-              context: context,
-            ),
-            _buildBlogCard(
-              text:
-                  'We are constantly updating our content so that you always get the freshest tips for your pets.',
-              imagePath: 'assets/images/fcdog3.jfif',
-              imageLeft: false,
-              context: context,
-            ),
-            _buildBlogCard(
-              text:
-                  'Stay tuned for new articles, exciting pet facts, and useful information for every pet parent.',
-              imagePath: 'assets/images/fcdog4.jfif',
-              imageLeft: true,
-              context: context,
-            ),
-            SizedBox(height: isSmallScreen ? 60 : 80),
+            imageWidget,
+            const SizedBox(height: 16),
+            Text(title,
+                style:
+                    const TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 8),
+            Text(date,
+                style:
+                    const TextStyle(fontSize: 12, fontStyle: FontStyle.italic)),
+            const SizedBox(height: 16),
+            Text(content, style: const TextStyle(fontSize: 16, height: 1.5)),
           ],
         ),
       ),

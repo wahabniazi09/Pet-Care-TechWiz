@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:pet_care/consts/consts.dart';
 
 class AdoptionFormScreen extends StatefulWidget {
   final Map<String, dynamic> animal;
@@ -162,8 +163,10 @@ class _AdoptionFormScreenState extends State<AdoptionFormScreen> {
                       foregroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(vertical: 16)),
                   child: const Text("Submit Request",
-                      style:
-                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                      style: TextStyle(
+                          fontSize: 18,
+                          color: whiteColor,
+                          fontWeight: FontWeight.bold)),
                 ),
               )
             ],

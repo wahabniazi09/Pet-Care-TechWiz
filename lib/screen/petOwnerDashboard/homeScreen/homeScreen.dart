@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -528,7 +529,7 @@ class _HomeScreenState extends State<HomeScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _imageBuilder(
-              vet["profilePic"], isSmallScreen ? 120 : 140, Icons.person),
+              vet["photoUrl"], isSmallScreen ? 120 : 140, Icons.person),
           Padding(
             padding: EdgeInsets.all(isSmallScreen ? 8.0 : 12.0),
             child: Column(
@@ -587,19 +588,51 @@ class _HomeScreenState extends State<HomeScreen> {
       );
 
   Widget _imageBuilder(
-      String? base64Img, double height, IconData fallbackIcon) {
-    return ClipRRect(
-      borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
-      child: base64Img != null
-          ? Image.memory(base64Decode(base64Img),
-              height: height, width: double.infinity, fit: BoxFit.cover)
-          : Container(
-              height: height,
-              width: double.infinity,
-              color: Colors.grey[100],
-              child: Center(
-                  child: Icon(fallbackIcon, size: 40, color: Colors.grey[400])),
-            ),
+      String? imageData, double height, IconData fallbackIcon) {
+    if (imageData == null || imageData.isEmpty) {
+      return _fallbackWidget(height, fallbackIcon);
+    }
+
+    if (imageData.startsWith('data')) {
+      return ClipRRect(
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+        child: Image.network(
+          imageData,
+          height: height,
+          width: double.infinity,
+          fit: BoxFit.cover,
+          errorBuilder: (context, error, stackTrace) =>
+              _fallbackWidget(height, fallbackIcon),
+        ),
+      );
+    }
+
+    try {
+      return ClipRRect(
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+        child: Image.memory(
+          base64Decode(imageData),
+          height: height,
+          width: double.infinity,
+          fit: BoxFit.cover,
+          errorBuilder: (context, error, stackTrace) =>
+              _fallbackWidget(height, fallbackIcon),
+        ),
+      );
+    } catch (e) {
+      // If decoding fails, show fallback
+      return _fallbackWidget(height, fallbackIcon);
+    }
+  }
+
+  Widget _fallbackWidget(double height, IconData fallbackIcon) {
+    return Container(
+      height: height,
+      width: double.infinity,
+      color: Colors.grey[100],
+      child: Center(
+        child: Icon(fallbackIcon, size: 40, color: Colors.grey[400]),
+      ),
     );
   }
 

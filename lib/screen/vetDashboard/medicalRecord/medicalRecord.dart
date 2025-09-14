@@ -189,6 +189,8 @@ class _MedicalRecordsScreenState extends State<MedicalRecordsScreen> {
                   petId,
                   data["pet_name"] ?? "Unnamed Pet",
                   data["pet_breed"] ?? "",
+                  data["pet_age"]?.toString() ?? "",
+                  data["pet_gender"] ?? "",
                 );
               }).toList(),
             );
@@ -198,7 +200,8 @@ class _MedicalRecordsScreenState extends State<MedicalRecordsScreen> {
     );
   }
 
-  Widget _buildMedicalRecordCard(String petId, String petName, String breed) {
+  Widget _buildMedicalRecordCard(
+      String petId, String petName, String breed, String age, String gender) {
     return Card(
       margin: const EdgeInsets.only(bottom: 16),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -220,7 +223,8 @@ class _MedicalRecordsScreenState extends State<MedicalRecordsScreen> {
                   Text(petName,
                       style: const TextStyle(
                           fontWeight: FontWeight.bold, fontSize: 16)),
-                  Text(breed),
+                  Text("Breed: $breed"),
+                  Text("Age: $age • Gender: $gender"),
                 ],
               ),
             ),
@@ -247,9 +251,6 @@ class _MedicalRecordsScreenState extends State<MedicalRecordsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-          title: const Text("Medical Records"),
-          backgroundColor: const Color(0xFF5425A5)),
       body: _buildMedicalRecords(),
     );
   }

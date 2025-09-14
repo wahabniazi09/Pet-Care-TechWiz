@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:pet_care/consts/colors.dart';
 
 class BookAppointmentScreen extends StatefulWidget {
   final Map<String, dynamic> vet;
@@ -171,13 +172,16 @@ class _BookAppointmentScreenState extends State<BookAppointmentScreen> {
             Center(
               child: ElevatedButton(
                 onPressed: _saveAppointment,
-                child: const Text('Book Appointment'),
+                child: Text(
+                  'Book Appointment',
+                  style: TextStyle(color: whiteColor),
+                ),
                 style: ElevatedButton.styleFrom(
                   padding:
                       const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12)),
-                  backgroundColor: Colors.deepOrange,
+                  backgroundColor: Colors.deepPurple,
                 ),
               ),
             ),
