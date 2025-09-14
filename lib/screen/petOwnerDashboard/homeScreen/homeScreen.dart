@@ -9,6 +9,7 @@ import 'package:pet_care/screen/petOwnerDashboard/homeScreen/petDetailsScreen.da
 import 'package:pet_care/screen/petOwnerDashboard/homeScreen/components/blogDetails.dart';
 import 'package:pet_care/screen/petOwnerDashboard/homeScreen/view_all_screen.dart';
 import 'package:pet_care/screen/petOwnerDashboard/storeScreen/components/item_details.dart';
+import 'package:pet_care/screen/widgets/snackBar.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -219,18 +220,19 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget sectionHeading(
+  Widget sectionHeading<T>(
     String title,
-    List<Map<String, dynamic>> items,
-    Widget Function(Map<String, dynamic>) itemBuilder,
+    List<T> items,
+    Widget Function(T) itemBuilder,
   ) {
     final screenWidth = MediaQuery.of(context).size.width;
     final isSmallScreen = screenWidth < 600;
 
     return Padding(
       padding: EdgeInsets.symmetric(
-          horizontal: isSmallScreen ? 16 : 20,
-          vertical: isSmallScreen ? 12 : 16),
+        horizontal: isSmallScreen ? 16 : 20,
+        vertical: isSmallScreen ? 12 : 16,
+      ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -269,93 +271,83 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _animalCard(Map<String, dynamic> animal) {
+  Widget _animalCard(dynamic animalItem) {
+    final animal = animalItem as Map<String, dynamic>;
     final screenWidth = MediaQuery.of(context).size.width;
     final isSmallScreen = screenWidth < 600;
 
     return Container(
-      width: isSmallScreen ? 220 : 260,
+      width: double.infinity,
+      margin: EdgeInsets.all(8),
+      decoration: _cardDecoration(),
+      child: Stack(
+      children: [
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _imageBuilder(animal["animal_image"], isSmallScreen ? 150 : 180, Icons.pets),
+            Padding(
+              padding: EdgeInsets.all(8.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    animal["animal_name"] ?? "Unknown",
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  Text(animal["breed"] ?? "Mixed Breed"),
+                ],
+              ),
+            ),
+          ],
+        ),
+        if (animal["isCancelled"] == true)
+          Positioned(
+            bottom: 0,
+            left: 0,
+            right: 0,
+            child: Container(
+              padding: EdgeInsets.symmetric(vertical: 4),
+              decoration: BoxDecoration(
+                color: Colors.yellow,
+                borderRadius: BorderRadius.vertical(
+                  bottom: Radius.circular(16),
+                ),
+              ),
+              child: Text(
+                "ADOPTION CANCELLED",
+                style: TextStyle(
+                  color: Colors.black,
+                  fontWeight: FontWeight.bold,
+                  fontSize: isSmallScreen ? 10 : 12,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ),
+          ),
+      ],
+    ),
+    );
+  }
+
+  Widget _blogCard(dynamic blogItem) {
+    final blog =
+        (blogItem as Map<String, dynamic>)['data'] as Map<String, dynamic>;
+    final blogId = (blogItem)['id'] as String;
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isSmallScreen = screenWidth < 600;
+
+    return Container(
+      width: isSmallScreen ? 200 : 240,
       margin: EdgeInsets.only(right: isSmallScreen ? 12 : 16),
       decoration: _cardDecoration(),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _imageBuilder(
-              animal["animal_image"], isSmallScreen ? 150 : 180, Icons.pets),
-          Padding(
-            padding: EdgeInsets.all(isSmallScreen ? 8.0 : 12.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(animal["animal_name"] ?? "Unknown",
-                    style: TextStyle(
-                        fontSize: isSmallScreen ? 16 : 20,
-                        fontWeight: FontWeight.bold)),
-                const SizedBox(height: 4),
-                Text(animal["breed"] ?? "Mixed Breed",
-                    style: TextStyle(
-                      color: Colors.grey[600],
-                      fontSize: isSmallScreen ? 12 : 14,
-                    )),
-                const SizedBox(height: 4),
-                Row(
-                  children: [
-                    Icon(Icons.location_on,
-                        size: isSmallScreen ? 12 : 14,
-                        color: Colors.deepOrange),
-                    const SizedBox(width: 4),
-                    Text(animal["location"] ?? "Unknown location",
-                        style: TextStyle(
-                            color: Colors.grey[600],
-                            fontSize: isSmallScreen ? 10 : 12)),
-                  ],
-                ),
-              ],
-            ),
-          ),
-          const Spacer(),
-          Center(
-            child: ElevatedButton.icon(
-              onPressed: () {
-                if (!_isLoggedIn()) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text("Please login to adopt an animal"),
-                      backgroundColor: Color.fromRGBO(49, 39, 79, 1),
-                    ),
-                  );
-                  return;
-                }
-                _navigateToPetDetails(animal);
-              },
-              icon: const Icon(Icons.favorite_border, size: 16),
-              label: Text("Adopt Now",
-                  style: TextStyle(fontSize: isSmallScreen ? 12 : 14)),
-              style: _buttonStyle(),
-            ),
-          ),
-          SizedBox(height: isSmallScreen ? 8 : 12),
-        ],
-      ),
-    );
-  }
-
-  Widget _blogCard(Map<String, dynamic> blog, String blogId) {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final isSmallScreen = screenWidth < 600;
-
-    return GestureDetector(
-      onTap: () => _navigateToBlogDetail(blog, blogId),
-      child: Container(
-        width: isSmallScreen ? 200 : 240,
-        margin: EdgeInsets.only(right: isSmallScreen ? 12 : 16),
-        decoration: _cardDecoration(),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _imageBuilder(
-                blog["image"], isSmallScreen ? 120 : 140, Icons.article),
-            Padding(
+              blog["image"], isSmallScreen ? 120 : 140, Icons.article),
+          Expanded(
+            child: Padding(
               padding: EdgeInsets.all(isSmallScreen ? 8.0 : 12.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -394,28 +386,40 @@ class _HomeScreenState extends State<HomeScreen> {
                       Text(blog["date"] ?? "Unknown date",
                           style: TextStyle(
                               color: Colors.grey[600],
-                              fontSize: isSmallScreen ? 9 : 11)),
-                      const SizedBox(width: 8),
+                              fontSize: isSmallScreen ? 9 : 11),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis),
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                  Row(
+                    children: [
                       Icon(Icons.person,
                           size: isSmallScreen ? 10 : 12,
                           color: Colors.grey[600]),
                       const SizedBox(width: 4),
-                      Text(blog["author"] ?? "Unknown author",
-                          style: TextStyle(
-                              color: Colors.grey[600],
-                              fontSize: isSmallScreen ? 9 : 11)),
+                      Expanded(
+                        child: Text(blog["author"] ?? "Unknown author",
+                            style: TextStyle(
+                                color: Colors.grey[600],
+                                fontSize: isSmallScreen ? 9 : 11),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis),
+                      ),
                     ],
                   ),
                   const SizedBox(height: 8),
-                  Text(
-                      blog["excerpt"] ??
-                          "Read this interesting blog post about pet care...",
-                      style: TextStyle(
-                          color: Colors.grey[700],
-                          fontSize: isSmallScreen ? 10 : 12,
-                          height: 1.4),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis),
+                  Expanded(
+                    child: Text(
+                        blog["excerpt"] ??
+                            "Read this interesting blog post about pet care...",
+                        style: TextStyle(
+                            color: Colors.grey[700],
+                            fontSize: isSmallScreen ? 10 : 12,
+                            height: 1.4),
+                        maxLines: 3,
+                        overflow: TextOverflow.ellipsis),
+                  ),
                   const SizedBox(height: 12),
                   SizedBox(
                     width: double.infinity,
@@ -431,13 +435,14 @@ class _HomeScreenState extends State<HomeScreen> {
                 ],
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
 
-  Widget _productCard(Map<String, dynamic> product) {
+  Widget _productCard(dynamic productItem) {
+    final product = productItem as Map<String, dynamic>;
     final screenWidth = MediaQuery.of(context).size.width;
     final isSmallScreen = screenWidth < 600;
 
@@ -459,13 +464,15 @@ class _HomeScreenState extends State<HomeScreen> {
                     style: TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: isSmallScreen ? 14 : 16),
-                    maxLines: 1,
+                    maxLines: 2,
                     overflow: TextOverflow.ellipsis),
                 const SizedBox(height: 6),
                 Text(product["p_category"] ?? "General",
                     style: TextStyle(
                         color: Colors.grey[600],
-                        fontSize: isSmallScreen ? 11 : 13)),
+                        fontSize: isSmallScreen ? 11 : 13),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis),
                 const SizedBox(height: 6),
                 Text("\$${product["p_price"] ?? "0"}",
                     style: TextStyle(
@@ -476,27 +483,31 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
           const Spacer(),
-          Center(
-            child: ElevatedButton(
-              onPressed: () {
-                if (!_isLoggedIn()) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text("Please login to buy Product"),
-                      backgroundColor: Color.fromRGBO(49, 39, 79, 1),
-                    ),
-                  );
-                  return;
-                }
-                Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (_) => ItemDetails(
-                            title: product["p_name"], data: product)));
-              },
-              style: _buttonStyle(),
-              child: Text("Buy Product",
-                  style: TextStyle(fontSize: isSmallScreen ? 12 : 14)),
+          Padding(
+            padding:
+                EdgeInsets.symmetric(horizontal: isSmallScreen ? 8.0 : 12.0),
+            child: SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () {
+                  if (!_isLoggedIn()) {
+                    AppNotifier.showSnack(
+                      context,
+                      message: "Please login to buy Product",
+                      isError: true,
+                    );
+                    return;
+                  }
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (_) => ItemDetails(
+                              title: product["p_name"], data: product)));
+                },
+                style: _buttonStyle(),
+                child: Text("Buy Product",
+                    style: TextStyle(fontSize: isSmallScreen ? 12 : 14)),
+              ),
             ),
           ),
           SizedBox(height: isSmallScreen ? 8 : 12),
@@ -505,7 +516,8 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _vetCard(Map<String, dynamic> vet) {
+  Widget _vetCard(dynamic vetItem) {
+    final vet = vetItem as Map<String, dynamic>;
     final screenWidth = MediaQuery.of(context).size.width;
     final isSmallScreen = screenWidth < 600;
 
@@ -526,22 +538,26 @@ class _HomeScreenState extends State<HomeScreen> {
                 Text(vet["name"] ?? "Unnamed Vet",
                     style: TextStyle(
                         fontWeight: FontWeight.bold,
-                        fontSize: isSmallScreen ? 14 : 16)),
+                        fontSize: isSmallScreen ? 14 : 16),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis),
                 const SizedBox(height: 4),
                 Text(vet["speciality"] ?? "Veterinarian",
                     style: TextStyle(
                         color: Colors.grey[600],
-                        fontSize: isSmallScreen ? 11 : 13)),
+                        fontSize: isSmallScreen ? 11 : 13),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis),
                 const SizedBox(height: 8),
-                Center(
+                SizedBox(
+                  width: double.infinity,
                   child: ElevatedButton(
                     onPressed: () {
                       if (!_isLoggedIn()) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text("Please login to book appointment"),
-                            backgroundColor: Color.fromRGBO(49, 39, 79, 1),
-                          ),
+                        AppNotifier.showSnack(
+                          context,
+                          message: "Please login to book appointment",
+                          isError: true,
                         );
                         return;
                       }
@@ -639,7 +655,6 @@ class _HomeScreenState extends State<HomeScreen> {
           slivers: [
             _buildAppBar(),
             _buildHeroSection(),
-
             StreamBuilder<QuerySnapshot>(
               stream: FirebaseFirestore.instance
                   .collection("users")
@@ -661,11 +676,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 );
               },
             ),
-
             SliverToBoxAdapter(
                 child: SizedBox(height: isSmallScreen ? 16 : 24)),
-
-            // ------------------- Adoption -------------------
             StreamBuilder<QuerySnapshot>(
               stream: FirebaseFirestore.instance
                   .collection(animalCollection)
@@ -688,11 +700,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 );
               },
             ),
-
             SliverToBoxAdapter(
                 child: SizedBox(height: isSmallScreen ? 16 : 24)),
-
-            // ------------------- Products -------------------
             StreamBuilder<QuerySnapshot>(
               stream:
                   FirebaseFirestore.instance.collection("products").snapshots(),
@@ -714,11 +723,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 );
               },
             ),
-
             SliverToBoxAdapter(
                 child: SizedBox(height: isSmallScreen ? 16 : 24)),
-
-            // ------------------- Blogs -------------------
             StreamBuilder<QuerySnapshot>(
               stream:
                   FirebaseFirestore.instance.collection("blogs").snapshots(),
@@ -734,15 +740,13 @@ class _HomeScreenState extends State<HomeScreen> {
                 return SliverToBoxAdapter(
                   child: Column(
                     children: [
-                      sectionHeading("Pet Care Blogs", blogs,
-                          (item) => _blogCard(item['data'], item['id'])),
+                      sectionHeading("Pet Care Blogs", blogs, _blogCard),
                       blogs.isEmpty ? const SizedBox() : blogsCarousel(blogs),
                     ],
                   ),
                 );
               },
             ),
-
             SliverToBoxAdapter(
                 child: SizedBox(height: isSmallScreen ? 16 : 24)),
           ],
@@ -752,19 +756,20 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget vetsCarousel(List<Map<String, dynamic>> vets) {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final isSmallScreen = screenWidth < 600;
+  final screenWidth = MediaQuery.of(context).size.width;
+  final isSmallScreen = screenWidth < 600;
 
-    return SizedBox(
-      height: isSmallScreen ? 260 : 300,
-      child: ListView.builder(
-        scrollDirection: Axis.horizontal,
-        padding: EdgeInsets.symmetric(horizontal: isSmallScreen ? 12 : 16),
-        itemCount: vets.length,
-        itemBuilder: (context, index) => _vetCard(vets[index]),
-      ),
-    );
-  }
+  return SizedBox(
+    height: isSmallScreen ? 300 : 340,
+    child: ListView.builder(
+      scrollDirection: Axis.horizontal,
+      padding: EdgeInsets.symmetric(horizontal: isSmallScreen ? 12 : 16),
+      itemCount: vets.length,
+      itemBuilder: (context, index) => _vetCard(vets[index]),
+    ),
+  );
+}
+
 
   Widget animalCarousel(List<Map<String, dynamic>> animals) {
     final screenWidth = MediaQuery.of(context).size.width;
@@ -781,34 +786,35 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget productsCarousel(List<Map<String, dynamic>> products) {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final isSmallScreen = screenWidth < 600;
+Widget productsCarousel(List<Map<String, dynamic>> products) {
+  final screenWidth = MediaQuery.of(context).size.width;
+  final isSmallScreen = screenWidth < 600;
 
-    return SizedBox(
-      height: isSmallScreen ? 320 : 360,
-      child: ListView.builder(
-        scrollDirection: Axis.horizontal,
-        padding: EdgeInsets.symmetric(horizontal: isSmallScreen ? 12 : 16),
-        itemCount: products.length,
-        itemBuilder: (context, index) => _productCard(products[index]),
-      ),
-    );
-  }
+  return SizedBox(
+    height: isSmallScreen ? 300 : 340,
+    child: ListView.builder(
+      scrollDirection: Axis.horizontal,
+      padding: EdgeInsets.symmetric(horizontal: isSmallScreen ? 12 : 16),
+      itemCount: products.length,
+      itemBuilder: (context, index) => _productCard(products[index]),
+    ),
+  );
+}
 
-  Widget blogsCarousel(List<Map<String, dynamic>> blogs) {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final isSmallScreen = screenWidth < 600;
 
-    return SizedBox(
-      height: isSmallScreen ? 320 : 360,
-      child: ListView.builder(
-        scrollDirection: Axis.horizontal,
-        padding: EdgeInsets.symmetric(horizontal: isSmallScreen ? 12 : 16),
-        itemCount: blogs.length,
-        itemBuilder: (context, index) =>
-            _blogCard(blogs[index]['data'], blogs[index]['id']),
-      ),
-    );
-  }
+Widget blogsCarousel(List<Map<String, dynamic>> blogs) {
+  final screenWidth = MediaQuery.of(context).size.width;
+  final isSmallScreen = screenWidth < 600;
+
+  return SizedBox(
+    height: isSmallScreen ? 380 : 420,
+    child: ListView.builder(
+      scrollDirection: Axis.horizontal,
+      padding: EdgeInsets.symmetric(horizontal: isSmallScreen ? 12 : 16),
+      itemCount: blogs.length,
+      itemBuilder: (context, index) => _blogCard(blogs[index]),
+    ),
+  );
+}
+
 }
