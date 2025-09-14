@@ -9,6 +9,7 @@ import 'package:pet_care/screen/petOwnerDashboard/ProfileScreen/adoptionScreen.d
 import 'package:pet_care/screen/petOwnerDashboard/ProfileScreen/appointmentScreen.dart';
 import 'package:pet_care/screen/petOwnerDashboard/ProfileScreen/cartScreen.dart';
 import 'package:pet_care/screen/petOwnerDashboard/ProfileScreen/editProfile.dart';
+import 'package:pet_care/screen/petOwnerDashboard/ProfileScreen/healthRecordsScreen.dart';
 import 'package:pet_care/screen/petOwnerDashboard/ProfileScreen/myPets.dart';
 import 'package:pet_care/screen/petOwnerDashboard/ProfileScreen/orderScreen.dart';
 import 'package:pet_care/screen/widgets/ownButton.dart';
@@ -177,6 +178,13 @@ class ProfileScreen extends StatelessWidget {
                   icon: Icons.pets,
                   text: "My Pets",
                   screen: const MyPetsScreen(),
+                ),
+                // Inside the menu items list
+                _buildMenuItem(
+                  context,
+                  icon: Icons.health_and_safety,
+                  text: "Health Records",
+                  screen: const HealthRecordsScreen(),
                 ),
 
                 const Divider(),
