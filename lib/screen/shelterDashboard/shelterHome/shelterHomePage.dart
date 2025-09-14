@@ -2,7 +2,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:pet_care/screen/shelterDashboard/shelterHome/adoptrequestPage.dart';
-import 'package:pet_care/consts/colors.dart';
 import 'package:intl/intl.dart';
 
 class Shelterhomepage extends StatelessWidget {
@@ -67,7 +66,7 @@ class Shelterhomepage extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Image.asset(
-                    'assets/images/no_requests.png', // You can add this asset
+                    'assets/images/no_requests.png', 
                     width: 150,
                     height: 150,
                     color: Colors.grey[300],
@@ -108,7 +107,6 @@ class Shelterhomepage extends StatelessWidget {
               final doc = requests[index];
               final request = doc.data() as Map<String, dynamic>;
 
-              // Get status color and icon
               Color statusColor;
               IconData statusIcon;
               switch (request['status']) {
@@ -159,7 +157,6 @@ class Shelterhomepage extends StatelessWidget {
                       child: Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          // Pet icon with colored background
                           Container(
                             width: 50,
                             height: 50,
@@ -175,7 +172,6 @@ class Shelterhomepage extends StatelessWidget {
                           ),
                           const SizedBox(width: 16),
                           
-                          // Request details
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -190,7 +186,6 @@ class Shelterhomepage extends StatelessWidget {
                                 ),
                                 const SizedBox(height: 6),
                                 
-                                // Applicant name
                                 Row(
                                   children: [
                                     Icon(
@@ -210,7 +205,6 @@ class Shelterhomepage extends StatelessWidget {
                                 ),
                                 const SizedBox(height: 6),
                                 
-                                // Request date
                                 Row(
                                   children: [
                                     Icon(
@@ -232,7 +226,6 @@ class Shelterhomepage extends StatelessWidget {
                             ),
                           ),
                           
-                          // Status badge
                           Container(
                             padding: const EdgeInsets.symmetric(
                                 horizontal: 12, vertical: 6),

@@ -65,7 +65,6 @@ class ProfilePage extends StatelessWidget {
           body: SingleChildScrollView(
             child: Column(
               children: [
-                // Header Section
                 Container(
                   height: 220,
                   decoration: BoxDecoration(
@@ -84,7 +83,6 @@ class ProfilePage extends StatelessWidget {
                   ),
                   child: Stack(
                     children: [
-                      // Background pattern
                       Positioned(
                         right: -50,
                         top: -50,
@@ -110,14 +108,12 @@ class ProfilePage extends StatelessWidget {
                         ),
                       ),
                       
-                      // Profile content
                       Positioned(
                         bottom: 20,
                         left: 0,
                         right: 0,
                         child: Column(
                           children: [
-                            // Profile image
                             Container(
                               width: 100,
                               height: 100,
@@ -189,7 +185,6 @@ class ProfilePage extends StatelessWidget {
                   ),
                 ),
 
-                // Action Buttons
                 Padding(
                   padding: const EdgeInsets.all(20),
                   child: Row(
@@ -221,7 +216,6 @@ class ProfilePage extends StatelessWidget {
                   ),
                 ),
 
-                // Details Card
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 20),
                   child: Card(

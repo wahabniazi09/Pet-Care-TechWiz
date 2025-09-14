@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 
 class BlogDetails extends StatelessWidget {
   final Map<String, dynamic> blog;

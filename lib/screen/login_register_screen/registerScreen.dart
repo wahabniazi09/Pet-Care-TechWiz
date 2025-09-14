@@ -52,9 +52,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
           email: emailController.text.trim(),
           password: passwordController.text.trim(),
         );
-
-<<<<<<< HEAD
-        
         if (userCredential != null) {
           await authentication.storeUserData(
             name: nameController.text,
@@ -63,40 +60,32 @@ class _RegisterScreenState extends State<RegisterScreen> {
             address: addressController.text,
             role: selectedRole,
           );
-=======
-        await authentication.storeUserData(
-          name: nameController.text,
-          email: emailController.text,
-          phone: phoneController.text,
-          address: addressController.text,
-          role: selectedRole,
-        );
->>>>>>> 0d7ac2bdb6d6b0ce26893c4a490135664bc72249
 
-        currentUser = userCredential.user;
+          currentUser = userCredential.user;
 
-        AppNotifier.showSnack(
-          context,
-          message: "Account created successfully!",
-        );
+          AppNotifier.showSnack(
+            context,
+            message: "Account created successfully!",
+          );
 
-        Widget switchRoleScreen;
-        switch (selectedRole) {
-          case "vet":
-            switchRoleScreen = const VetScreen();
-            break;
-          case "shelter":
-            switchRoleScreen = const ShelterScreen();
-            break;
-          default:
-            switchRoleScreen = const Home();
+          Widget switchRoleScreen;
+          switch (selectedRole) {
+            case "vet":
+              switchRoleScreen = const VetScreen();
+              break;
+            case "shelter":
+              switchRoleScreen = const ShelterScreen();
+              break;
+            default:
+              switchRoleScreen = const Home();
+          }
+
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (_) => switchRoleScreen),
+          );
         }
-
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (_) => switchRoleScreen),
-        );
-            } on FirebaseAuthException catch (e) {
+      } on FirebaseAuthException catch (e) {
         AppNotifier.handleAuthError(context, e);
       } catch (_) {
         AppNotifier.handleError(context, _);
@@ -253,7 +242,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
                     SizedBox(height: isSmallScreen ? 15 : 20),
 
-                    // Sign Up Button
                     FadeAnimation(
                       1.9,
                       Container(
