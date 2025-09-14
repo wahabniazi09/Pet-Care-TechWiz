@@ -6,8 +6,6 @@ import 'package:pet_care/screen/shelterDashboard/shelterScreen.dart';
 import 'package:pet_care/screen/login_register_screen/loginScreen.dart';
 import 'package:pet_care/screen/petOwnerDashboard/homeScreen/homeNav.dart';
 import 'package:pet_care/consts/theme_constant.dart';
-import 'package:pet_care/screen/login_register_screen/loginScreen.dart';
-import 'package:pet_care/screen/shelterDashboard/shelterScreen.dart';
 import 'package:pet_care/screen/vetDashboard/vetScreen.dart';
 import 'package:pet_care/screen/widgets/custom_form.dart';
 import 'package:pet_care/screen/widgets/snackBar.dart';
@@ -55,40 +53,38 @@ class _RegisterScreenState extends State<RegisterScreen> {
           password: passwordController.text.trim(),
         );
 
-        if (userCredential != null) {
-          await authentication.storeUserData(
-            name: nameController.text,
-            email: emailController.text,
-            phone: phoneController.text,
-            address: addressController.text,
-            role: selectedRole,
-          );
+        await authentication.storeUserData(
+          name: nameController.text,
+          email: emailController.text,
+          phone: phoneController.text,
+          address: addressController.text,
+          role: selectedRole,
+        );
 
-          currentUser = userCredential.user;
+        currentUser = userCredential.user;
 
-          AppNotifier.showSnack(
-            context,
-            message: "Account created successfully!",
-          );
+        AppNotifier.showSnack(
+          context,
+          message: "Account created successfully!",
+        );
 
-          Widget switchRoleScreen;
-          switch (selectedRole) {
-            case "vet":
-              switchRoleScreen = const VetScreen();
-              break;
-            case "shelter":
-              switchRoleScreen = const ShelterScreen();
-              break;
-            default:
-              switchRoleScreen = const Home();
-          }
-
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (_) => switchRoleScreen),
-          );
+        Widget switchRoleScreen;
+        switch (selectedRole) {
+          case "vet":
+            switchRoleScreen = const VetScreen();
+            break;
+          case "shelter":
+            switchRoleScreen = const ShelterScreen();
+            break;
+          default:
+            switchRoleScreen = const Home();
         }
-      } on FirebaseAuthException catch (e) {
+
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => switchRoleScreen),
+        );
+            } on FirebaseAuthException catch (e) {
         AppNotifier.handleAuthError(context, e);
       } catch (_) {
         AppNotifier.handleError(context, _);

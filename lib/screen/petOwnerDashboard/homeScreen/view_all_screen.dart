@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 
-class ViewAllScreen extends StatelessWidget {
+class ViewAllScreen<T> extends StatelessWidget {
   final String title;
-  final List<Map<String, dynamic>> items;
-  final Widget Function(Map<String, dynamic> item) itemBuilder;
+  final List<T> items;
+  final Widget Function(T) itemBuilder;
 
   const ViewAllScreen({
     super.key,
@@ -33,7 +33,7 @@ class ViewAllScreen extends StatelessWidget {
             crossAxisCount: crossAxisCount,
             mainAxisSpacing: spacing,
             crossAxisSpacing: spacing,
-            childAspectRatio: isSmallScreen ? 0.7 : 0.8,
+            childAspectRatio: isSmallScreen ? 0.65 : 0.7,
           ),
           itemBuilder: (context, index) => itemBuilder(items[index]),
         ),
