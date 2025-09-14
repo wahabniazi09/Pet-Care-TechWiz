@@ -2,9 +2,9 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:pet_care/Animation/FadeAnimation.dart';
 import 'package:pet_care/consts/firebase_consts.dart';
-import 'package:pet_care/screen/petOwnerDashboard/petHome/petNav.dart';
 import 'package:pet_care/screen/shelterDashboard/shelterScreen.dart';
 import 'package:pet_care/screen/login_register_screen/loginScreen.dart';
+import 'package:pet_care/screen/petOwnerDashboard/homeScreen/homeNav.dart';
 import 'package:pet_care/screen/vetDashboard/vetScreen.dart';
 import 'package:pet_care/screen/widgets/custom_form.dart';
 import 'package:pet_care/services/authServices/authentication.dart';
@@ -45,7 +45,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
     final width = MediaQuery.of(context).size.width;
 
     return Scaffold(
-      appBar: AppBar(),
       backgroundColor: Colors.white,
       body: SingleChildScrollView(
         child: Form(
@@ -276,7 +275,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
               switchRoleScreeen = const ShelterScreen();
               break;
             default:
-              switchRoleScreeen = const PetNav();
+              switchRoleScreeen = const Home();
           }
           Navigator.pushReplacement(
             context,

@@ -3,9 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:pet_care/animation/fadeAnimation.dart';
 import 'package:pet_care/consts/firebase_consts.dart';
 import 'package:pet_care/screen/login_register_screen/ForgetScreen.dart';
-import 'package:pet_care/screen/petOwnerDashboard/petHome/petNav.dart';
 import 'package:pet_care/screen/shelterDashboard/shelterScreen.dart';
-import 'package:pet_care/screen/user/homeScreen/homeNav.dart';
+import 'package:pet_care/screen/petOwnerDashboard/homeScreen/homeNav.dart';
 import 'package:pet_care/screen/vetDashboard/vetScreen.dart';
 import 'package:pet_care/screen/login_register_screen/registerScreen.dart';
 import 'package:pet_care/screen/widgets/custom_form.dart';
@@ -93,7 +92,6 @@ class _FancyLoginScreenState extends State<LoginScreen> {
   Widget build(BuildContext context) {
     final width = MediaQuery.of(context).size.width;
     return Scaffold(
-      appBar: AppBar(),
       backgroundColor: Colors.white,
       body: SingleChildScrollView(
         child: Column(

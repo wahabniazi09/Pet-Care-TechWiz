@@ -23,7 +23,7 @@ class _ShelterScreenState extends State<ShelterScreen> {
   int _currentIndex = 0;
 
   final List<Widget> _pages = [
-    const HomePage(),
+    const Shelterhomepage(),
     const AnimalsPage(),
     ShelterProductDetails(),
     const BlogHome(),

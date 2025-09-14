@@ -7,7 +7,7 @@ class Ownbutton extends StatelessWidget {
       required this.onTap,
       required this.width});
 
-  final String title;
+  final dynamic title;
   final VoidCallback onTap;
   final double width;
 
@@ -15,6 +15,7 @@ class Ownbutton extends StatelessWidget {
   Widget build(BuildContext context) {
     return SizedBox(
       width: width,
+      height: 50,
       child: ElevatedButton(
           style: ElevatedButton.styleFrom(
               backgroundColor: Colors.orange[900],

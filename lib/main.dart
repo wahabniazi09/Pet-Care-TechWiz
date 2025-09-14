@@ -2,7 +2,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:pet_care/consts/consts.dart';
 import 'package:pet_care/firebase_options.dart';
-import 'package:pet_care/screen/user/splashScreen/splashScreen.dart';
+import 'package:pet_care/screen/petOwnerDashboard/splashScreen/splashScreen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -21,7 +21,7 @@ class PetCareApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: "Pet Care App",
       theme: ThemeData(
-        scaffoldBackgroundColor: Colors.transparent,
+        scaffoldBackgroundColor: whiteColor,
         appBarTheme: AppBarTheme(
             iconTheme: IconThemeData(color: darkFontGrey),
             backgroundColor: Colors.transparent),
