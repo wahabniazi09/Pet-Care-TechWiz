@@ -35,7 +35,6 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
-
   Future<void> signInUser() async {
     final email = _emailController.text.trim();
     final password = _passwordController.text.trim();
@@ -74,9 +73,10 @@ class _LoginScreenState extends State<LoginScreen> {
           }
 
           AppNotifier.showSnack(context, message: "Login Successful!");
-          Navigator.pushReplacement(
+          Navigator.pushAndRemoveUntil(
             context,
             MaterialPageRoute(builder: (_) => nextScreen),
+            (Route<dynamic> route) => false,
           );
         } else {
           AppNotifier.showSnack(context,

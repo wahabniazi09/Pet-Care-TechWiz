@@ -10,7 +10,6 @@ class Authentication {
   final FirebaseFirestore firestore = FirebaseFirestore.instance;
   User? get currentUser => auth.currentUser;
 
-
   Future<String?> getUserRole() async {
     if (currentUser == null) return null;
     final doc =
@@ -28,11 +27,12 @@ class Authentication {
         password: password,
       );
     } on FirebaseAuthException catch (e) {
-      throw e; 
+      throw e;
     } catch (e) {
       rethrow;
     }
   }
+
   Future<UserCredential> signUp({
     required String email,
     required String password,

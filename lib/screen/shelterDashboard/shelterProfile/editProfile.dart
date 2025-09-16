@@ -26,6 +26,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
   String? currentPhotoUrl;
 
   bool isSaving = false;
+  bool isPickingImage = false; // 👈 for loader in avatar
 
   @override
   void initState() {
@@ -56,18 +57,23 @@ class _EditProfilePageState extends State<EditProfilePage> {
 
   Future<void> pickImage() async {
     try {
+      setState(() => isPickingImage = true); // show loader
       final picker = ImagePicker();
       final pickedFile = await picker.pickImage(source: ImageSource.gallery);
-      if (pickedFile == null) return;
+      if (pickedFile == null) {
+        setState(() => isPickingImage = false);
+        return;
+      }
 
       if (kIsWeb) {
         profileImageWeb = await pickedFile.readAsBytes();
       } else {
         profileImagePath = pickedFile.path;
       }
-      setState(() {});
     } catch (e) {
       debugPrint("Error picking image: $e");
+    } finally {
+      setState(() => isPickingImage = false); // hide loader
     }
   }
 
@@ -81,9 +87,8 @@ class _EditProfilePageState extends State<EditProfilePage> {
 
       String? photoUrl = currentPhotoUrl;
 
-      // Save image as base64 for web, path for mobile
       if (kIsWeb && profileImageWeb != null) {
-        photoUrl = "data:image/png;base64,${base64Encode(profileImageWeb!)}";
+        photoUrl = base64Encode(profileImageWeb!);
       } else if (!kIsWeb && profileImagePath != null) {
         photoUrl = profileImagePath;
       }
@@ -101,7 +106,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
         const SnackBar(content: Text("Profile updated successfully")),
       );
 
-      Navigator.pop(context); // Back to ProfilePage
+      Navigator.pop(context, true); // 👈 return true to refresh profile screen
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("Error: $e")),
@@ -115,10 +120,8 @@ class _EditProfilePageState extends State<EditProfilePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          "Edit Profile",
-          style: TextStyle(color: Colors.white),
-        ),
+        title:
+            const Text("Edit Profile", style: TextStyle(color: Colors.white)),
         iconTheme: const IconThemeData(color: Colors.white),
         backgroundColor: Colors.deepPurple,
         actions: [
@@ -161,15 +164,19 @@ class _EditProfilePageState extends State<EditProfilePage> {
                     child: CircleAvatar(
                       radius: 50,
                       backgroundColor: Colors.white,
-                      child: CircleAvatar(
-                        radius: 46,
-                        backgroundImage: profileImageWeb != null
-                            ? MemoryImage(profileImageWeb!)
-                            : (profileImagePath != null
-                                ? FileImage(File(profileImagePath!))
-                                : NetworkImage(currentPhotoUrl ?? "")
-                                    as ImageProvider),
-                      ),
+                      child: isPickingImage
+                          ? const CircularProgressIndicator(
+                              color: Colors.deepPurple,
+                            )
+                          : CircleAvatar(
+                              radius: 46,
+                              backgroundImage: profileImageWeb != null
+                                  ? MemoryImage(profileImageWeb!)
+                                  : (profileImagePath != null
+                                      ? FileImage(File(profileImagePath!))
+                                      : NetworkImage(currentPhotoUrl ?? "")
+                                          as ImageProvider),
+                            ),
                     ),
                   ),
                 ),

@@ -80,9 +80,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
               switchRoleScreen = const Home();
           }
 
-          Navigator.pushReplacement(
+          Navigator.pushAndRemoveUntil(
             context,
             MaterialPageRoute(builder: (_) => switchRoleScreen),
+            (Route<dynamic> route) => false,
           );
         }
       } on FirebaseAuthException catch (e) {
@@ -165,7 +166,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       ),
                     ),
                     SizedBox(height: isSmallScreen ? 15 : 20),
-
                     FadeAnimation(
                       1.7,
                       Container(
@@ -239,9 +239,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         ),
                       ),
                     ),
-
                     SizedBox(height: isSmallScreen ? 15 : 20),
-
                     FadeAnimation(
                       1.9,
                       Container(
@@ -270,9 +268,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         ),
                       ),
                     ),
-
                     SizedBox(height: isSmallScreen ? 8 : 10),
-
                     FadeAnimation(
                       2,
                       Center(

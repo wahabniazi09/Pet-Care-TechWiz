@@ -37,11 +37,6 @@ class _VetScreenState extends State<VetScreen> {
         foregroundColor: Colors.white,
         elevation: 0,
         centerTitle: true,
-        shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(
-            bottom: Radius.circular(15),
-          ),
-        ),
       ),
       body: _getCurrentPage(),
       bottomNavigationBar: _buildBottomNavigationBar(),
@@ -77,85 +72,6 @@ class _VetScreenState extends State<VetScreen> {
         return VetDashboard();
     }
   }
-
-  // Widget _buildMedicalRecords() {
-  //   return SingleChildScrollView(
-  //     padding: const EdgeInsets.all(16),
-  //     child: Column(
-  //       crossAxisAlignment: CrossAxisAlignment.start,
-  //       children: [
-  //         // Search bar
-  //         TextField(
-  //           decoration: InputDecoration(
-  //             hintText: "Search pets or owners...",
-  //             prefixIcon: Icon(Icons.search, color: Colors.grey[500]),
-  //             filled: true,
-  //             fillColor: Colors.white,
-  //             border: OutlineInputBorder(
-  //               borderRadius: BorderRadius.circular(12),
-  //               borderSide: BorderSide.none,
-  //             ),
-  //             contentPadding:
-  //                 const EdgeInsets.symmetric(vertical: 0, horizontal: 16),
-  //           ),
-  //         ),
-  //         const SizedBox(height: 20),
-
-  //         // Recent records
-  //         const Text(
-  //           "Recent Medical Records",
-  //           style: TextStyle(
-  //             fontSize: 18,
-  //             fontWeight: FontWeight.bold,
-  //             color: Color(0xFF333333),
-  //           ),
-  //         ),
-  //         const SizedBox(height: 12),
-
-  //         _buildMedicalRecordCard(
-  //             "Max", "Golden Retriever", "Last visit: 2 days ago"),
-  //         _buildMedicalRecordCard(
-  //             "Bella", "Siamese Cat", "Last visit: 1 week ago"),
-  //         _buildMedicalRecordCard(
-  //             "Rocky", "German Shepherd", "Last visit: 3 days ago"),
-  //         _buildMedicalRecordCard(
-  //             "Luna", "Labrador", "Last visit: 2 weeks ago"),
-  //       ],
-  //     ),
-  //   );
-  // }
-
-  // Widget _buildMedicalRecordCard(
-  //     String petName, String breed, String lastVisit) {
-  //   return Card(
-  //     margin: const EdgeInsets.only(bottom: 12),
-  //     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-  //     elevation: 2,
-  //     child: ListTile(
-  //       contentPadding: const EdgeInsets.all(16),
-  //       leading: Container(
-  //         width: 50,
-  //         height: 50,
-  //         decoration: BoxDecoration(
-  //           color: const Color(0xFF5425A5).withOpacity(0.1),
-  //           shape: BoxShape.circle,
-  //         ),
-  //         child: Icon(Icons.pets, color: Color(0xFF5425A5)),
-  //       ),
-  //       title: Text(
-  //         petName,
-  //         style: const TextStyle(fontWeight: FontWeight.bold),
-  //       ),
-  //       subtitle: Text("$breed • $lastVisit"),
-  //       trailing: IconButton(
-  //         icon: Icon(Icons.visibility, color: Color(0xFF5425A5)),
-  //         onPressed: () {
-  //           // Navigate to medical record details
-  //         },
-  //       ),
-  //     ),
-  //   );
-  // }
 
   Widget _buildBottomNavigationBar() {
     return Container(
