@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:pet_care/consts/colors.dart';
 import 'package:pet_care/screen/petOwnerDashboard/homeScreen/components/addoptionFormScreen.dart';
 
 class PetDetailsScreen extends StatelessWidget {
@@ -13,8 +14,9 @@ class PetDetailsScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text(animal["animal_name"] ?? "Pet Details"),
-        backgroundColor: Colors.deepOrange,
+        backgroundColor: Colors.deepPurple,
         foregroundColor: Colors.white,
+        iconTheme: IconThemeData(color: whiteColor),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
@@ -138,7 +140,7 @@ class PetDetailsScreen extends StatelessWidget {
                   );
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.deepOrange,
+                  backgroundColor: Colors.deepPurple,
                   foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   shape: RoundedRectangleBorder(
@@ -167,7 +169,7 @@ class PetDetailsScreen extends StatelessWidget {
       ),
       child: Row(
         children: [
-          Icon(icon, color: Colors.deepOrange),
+          Icon(icon, color: Colors.deepPurple),
           const SizedBox(width: 10),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,

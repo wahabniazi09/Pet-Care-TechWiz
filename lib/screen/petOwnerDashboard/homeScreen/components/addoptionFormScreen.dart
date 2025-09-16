@@ -30,8 +30,9 @@ class _AdoptionFormScreenState extends State<AdoptionFormScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text("Adoption Request"),
-        backgroundColor: Colors.deepOrange,
+        backgroundColor: Colors.deepPurple,
         foregroundColor: Colors.white,
+        iconTheme: IconThemeData(color: whiteColor),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
@@ -159,7 +160,7 @@ class _AdoptionFormScreenState extends State<AdoptionFormScreen> {
                 child: ElevatedButton(
                   onPressed: _submitAdoptionRequest,
                   style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.deepOrange,
+                      backgroundColor: Colors.deepPurple,
                       foregroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(vertical: 16)),
                   child: const Text("Submit Request",
