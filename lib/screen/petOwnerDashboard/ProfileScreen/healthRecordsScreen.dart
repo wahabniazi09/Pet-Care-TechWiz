@@ -42,7 +42,6 @@ class HealthRecordsScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text("Health Records"),
-        backgroundColor: Colors.deepOrange,
       ),
       body: StreamBuilder<QuerySnapshot>(
         stream: getHealthRecords(user.uid),
@@ -80,7 +79,7 @@ class HealthRecordsScreen extends StatelessWidget {
                 ),
                 child: ListTile(
                   leading: const Icon(Icons.medical_information,
-                      color: Colors.deepOrange, size: 40),
+                      color: Colors.deepPurple, size: 40),
                   title: Text("Diagnosis: $diagnosis",
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,

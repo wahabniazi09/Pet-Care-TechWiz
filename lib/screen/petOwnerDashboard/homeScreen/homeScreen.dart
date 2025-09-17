@@ -5,9 +5,12 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:pet_care/consts/firebase_consts.dart';
 import 'package:pet_care/screen/petOwnerDashboard/homeScreen/components/bookAppointment.dart';
+import 'package:pet_care/screen/petOwnerDashboard/homeScreen/components/viewAllAnimal.dart';
+import 'package:pet_care/screen/petOwnerDashboard/homeScreen/components/viewAllBlogs.dart';
+import 'package:pet_care/screen/petOwnerDashboard/homeScreen/components/viewAllProducts.dart';
+import 'package:pet_care/screen/petOwnerDashboard/homeScreen/components/viewAllVets.dart';
 import 'package:pet_care/screen/petOwnerDashboard/homeScreen/petDetailsScreen.dart';
 import 'package:pet_care/screen/petOwnerDashboard/homeScreen/components/blogDetails.dart';
-import 'package:pet_care/screen/petOwnerDashboard/homeScreen/view_all_screen.dart';
 import 'package:pet_care/screen/petOwnerDashboard/storeScreen/components/item_details.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -244,17 +247,41 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           TextButton(
             onPressed: () {
-              if (items.isEmpty) return;
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => ViewAllScreen(
-                    title: title,
-                    items: items,
-                    itemBuilder: itemBuilder,
+              if (title == "Veterinarians") {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) =>
+                        ViewAllVets(vets: items, itemBuilder: itemBuilder),
                   ),
-                ),
-              );
+                );
+              } else if (title == "Adoption") {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => ViewAllAnimals(
+                        animals: items, itemBuilder: itemBuilder),
+                  ),
+                );
+              } else if (title == "Pet Products") {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => ViewAllProducts(
+                        products: items, itemBuilder: itemBuilder),
+                  ),
+                );
+              } else if (title == "Pet Care Blogs") {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => ViewAllBlogs(
+                      blogs: items,
+                      itemBuilder: (data, id) => _blogCard(data, id),
+                    ),
+                  ),
+                );
+              }
             },
             child: const Text(
               "View All",
@@ -271,70 +298,67 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _animalCard(Map<String, dynamic> animal) {
     final screenWidth = MediaQuery.of(context).size.width;
-    final isSmallScreen = screenWidth < 600;
+    final screenHeight = MediaQuery.of(context).size.height;
+
+    final cardWidth = screenWidth * 0.7; // 70% of screen width
+    final cardHeight = screenHeight * 0.40; // Fixed card height (40% of screen)
+    final imageHeight = screenHeight * 0.22; // 22% of screen height
 
     return Container(
-      width: isSmallScreen ? 220 : 260,
-      margin: EdgeInsets.only(right: isSmallScreen ? 12 : 16),
+      width: cardWidth,
+      height: cardHeight, // 🔹 Fix height so button always stays in place
+      margin: EdgeInsets.only(right: screenWidth * 0.03),
       decoration: _cardDecoration(),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _imageBuilder(
-              animal["animal_image"], isSmallScreen ? 150 : 180, Icons.pets),
-          Padding(
-            padding: EdgeInsets.all(isSmallScreen ? 8.0 : 12.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(animal["animal_name"] ?? "Unknown",
+          _imageBuilder(animal["animal_image"], imageHeight, Icons.pets),
+
+          // ✅ Expandable details section
+          Expanded(
+            child: Padding(
+              padding: EdgeInsets.all(screenWidth * 0.03),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    animal["animal_name"] ?? "Unknown",
                     style: TextStyle(
-                        fontSize: isSmallScreen ? 16 : 20,
-                        fontWeight: FontWeight.bold)),
-                const SizedBox(height: 4),
-                Text(animal["breed"] ?? "Mixed Breed",
+                      fontSize: screenWidth * 0.04,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    animal["breed"] ?? "Mixed Breed",
                     style: TextStyle(
                       color: Colors.grey[600],
-                      fontSize: isSmallScreen ? 12 : 14,
-                    )),
-                const SizedBox(height: 4),
-                Row(
-                  children: [
-                    Icon(Icons.location_on,
-                        size: isSmallScreen ? 12 : 14,
-                        color: Colors.deepOrange),
-                    const SizedBox(width: 4),
-                    Text(animal["location"] ?? "Unknown location",
-                        style: TextStyle(
-                            color: Colors.grey[600],
-                            fontSize: isSmallScreen ? 10 : 12)),
-                  ],
-                ),
-              ],
-            ),
-          ),
-          const Spacer(),
-          Center(
-            child: ElevatedButton.icon(
-              onPressed: () {
-                if (!_isLoggedIn()) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text("Please login to adopt an animal"),
-                      backgroundColor: Color.fromRGBO(49, 39, 79, 1),
+                      fontSize: screenWidth * 0.035,
                     ),
-                  );
-                  return;
-                }
-                _navigateToPetDetails(animal);
-              },
-              icon: const Icon(Icons.favorite_border, size: 16),
-              label: Text("Adopt Now",
-                  style: TextStyle(fontSize: isSmallScreen ? 12 : 14)),
-              style: _buttonStyle(),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+
+                  const Spacer(), // 🔹 Push button to bottom
+
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton.icon(
+                      onPressed: () => _navigateToPetDetails(animal),
+                      icon: const Icon(Icons.favorite_border, size: 16),
+                      label: Text(
+                        "Adopt Now",
+                        style: TextStyle(fontSize: screenWidth * 0.035),
+                      ),
+                      style: _buttonStyle(),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
-          SizedBox(height: isSmallScreen ? 8 : 12),
         ],
       ),
     );
@@ -355,59 +379,60 @@ class _HomeScreenState extends State<HomeScreen> {
           children: [
             _imageBuilder(
                 blog["image"], isSmallScreen ? 120 : 140, Icons.article),
-            Padding(
-              padding: EdgeInsets.all(isSmallScreen ? 8.0 : 12.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  if (blog["category"] != null)
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 4),
-                      margin: const EdgeInsets.only(bottom: 8),
-                      decoration: BoxDecoration(
-                        color: const Color.fromRGBO(49, 39, 79, 1),
-                        borderRadius: BorderRadius.circular(8),
+            Expanded(
+              child: Padding(
+                padding: EdgeInsets.all(isSmallScreen ? 8.0 : 12.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    if (blog["category"] != null)
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 8, vertical: 4),
+                        margin: const EdgeInsets.only(bottom: 8),
+                        decoration: BoxDecoration(
+                          color: const Color.fromRGBO(49, 39, 79, 1),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Text(
+                          blog["category"].toString().toUpperCase(),
+                          style: TextStyle(
+                              color: Colors.white,
+                              fontSize: isSmallScreen ? 8 : 10,
+                              fontWeight: FontWeight.bold),
+                        ),
                       ),
-                      child: Text(
-                        blog["category"].toString().toUpperCase(),
+                    Text(blog["title"] ?? "Untitled Blog",
                         style: TextStyle(
-                            color: Colors.white,
-                            fontSize: isSmallScreen ? 8 : 10,
-                            fontWeight: FontWeight.bold),
-                      ),
+                            fontWeight: FontWeight.bold,
+                            fontSize: isSmallScreen ? 13 : 15,
+                            height: 1.3),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis),
+                    const SizedBox(height: 6),
+                    Row(
+                      children: [
+                        Icon(Icons.calendar_today,
+                            size: isSmallScreen ? 10 : 12,
+                            color: Colors.grey[600]),
+                        const SizedBox(width: 4),
+                        Text(blog["date"] ?? "Unknown date",
+                            style: TextStyle(
+                                color: Colors.grey[600],
+                                fontSize: isSmallScreen ? 9 : 11)),
+                        const SizedBox(width: 8),
+                        Icon(Icons.person,
+                            size: isSmallScreen ? 10 : 12,
+                            color: Colors.grey[600]),
+                        const SizedBox(width: 4),
+                        Text(blog["author"] ?? "Unknown author",
+                            style: TextStyle(
+                                color: Colors.grey[600],
+                                fontSize: isSmallScreen ? 9 : 11)),
+                      ],
                     ),
-                  Text(blog["title"] ?? "Untitled Blog",
-                      style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: isSmallScreen ? 13 : 15,
-                          height: 1.3),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis),
-                  const SizedBox(height: 6),
-                  Row(
-                    children: [
-                      Icon(Icons.calendar_today,
-                          size: isSmallScreen ? 10 : 12,
-                          color: Colors.grey[600]),
-                      const SizedBox(width: 4),
-                      Text(blog["date"] ?? "Unknown date",
-                          style: TextStyle(
-                              color: Colors.grey[600],
-                              fontSize: isSmallScreen ? 9 : 11)),
-                      const SizedBox(width: 8),
-                      Icon(Icons.person,
-                          size: isSmallScreen ? 10 : 12,
-                          color: Colors.grey[600]),
-                      const SizedBox(width: 4),
-                      Text(blog["author"] ?? "Unknown author",
-                          style: TextStyle(
-                              color: Colors.grey[600],
-                              fontSize: isSmallScreen ? 9 : 11)),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
+                    const SizedBox(height: 8),
+                    Text(
                       blog["excerpt"] ??
                           "Read this interesting blog post about pet care...",
                       style: TextStyle(
@@ -415,20 +440,22 @@ class _HomeScreenState extends State<HomeScreen> {
                           fontSize: isSmallScreen ? 10 : 12,
                           height: 1.4),
                       maxLines: 2,
-                      overflow: TextOverflow.ellipsis),
-                  const SizedBox(height: 12),
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: () => _navigateToBlogDetail(blog, blogId),
-                      style: _buttonStyle(),
-                      child: Text("Read More",
-                          style: TextStyle(
-                              fontSize: isSmallScreen ? 11 : 13,
-                              fontWeight: FontWeight.w600)),
+                      overflow: TextOverflow.ellipsis,
                     ),
-                  ),
-                ],
+                    const Spacer(), // 🟢 Pushes button to bottom
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: () => _navigateToBlogDetail(blog, blogId),
+                        style: _buttonStyle(),
+                        child: Text("Read More",
+                            style: TextStyle(
+                                fontSize: isSmallScreen ? 11 : 13,
+                                fontWeight: FontWeight.w600)),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ],
@@ -443,63 +470,91 @@ class _HomeScreenState extends State<HomeScreen> {
 
     return Container(
       width: isSmallScreen ? 190 : 220,
+      height: isSmallScreen ? 300 : 340, // 🔹 Fixed height for consistency
       margin: EdgeInsets.only(right: isSmallScreen ? 12 : 16),
       decoration: _cardDecoration(),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _imageBuilder(product["p_image"], isSmallScreen ? 140 : 160,
-              Icons.shopping_bag),
-          Padding(
-            padding: EdgeInsets.all(isSmallScreen ? 8.0 : 12.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(product["p_name"] ?? "Unnamed Product",
-                    style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: isSmallScreen ? 14 : 16),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis),
-                const SizedBox(height: 6),
-                Text(product["p_category"] ?? "General",
-                    style: TextStyle(
-                        color: Colors.grey[600],
-                        fontSize: isSmallScreen ? 11 : 13)),
-                const SizedBox(height: 6),
-                Text("\$${product["p_price"] ?? "0"}",
-                    style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        color: Colors.deepOrange,
-                        fontSize: isSmallScreen ? 13 : 15)),
-              ],
-            ),
+          _imageBuilder(
+            product["p_image"],
+            isSmallScreen ? 120 : 140,
+            Icons.shopping_bag,
           ),
-          const Spacer(),
-          Center(
-            child: ElevatedButton(
-              onPressed: () {
-                if (!_isLoggedIn()) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text("Please login to buy Product"),
-                      backgroundColor: Color.fromRGBO(49, 39, 79, 1),
+
+          // ✅ Expandable content
+          Expanded(
+            child: Padding(
+              padding: EdgeInsets.all(isSmallScreen ? 8.0 : 12.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    product["p_name"] ?? "Unnamed Product",
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: isSmallScreen ? 12 : 16,
                     ),
-                  );
-                  return;
-                }
-                Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (_) => ItemDetails(
-                            title: product["p_name"], data: product)));
-              },
-              style: _buttonStyle(),
-              child: Text("Buy Product",
-                  style: TextStyle(fontSize: isSmallScreen ? 12 : 14)),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    product["p_category"] ?? "General",
+                    style: TextStyle(
+                      color: Colors.grey[600],
+                      fontSize: isSmallScreen ? 11 : 13,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    "\$${product["p_price"] ?? "0"}",
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: Colors.deepOrange,
+                      fontSize: isSmallScreen ? 13 : 15,
+                    ),
+                  ),
+
+                  const Spacer(), // 🔹 Push button to the bottom
+
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        if (!_isLoggedIn()) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text("Please login to buy Product"),
+                              backgroundColor: Color.fromRGBO(49, 39, 79, 1),
+                            ),
+                          );
+                          return;
+                        }
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => ItemDetails(
+                              title: product["p_name"],
+                              data: product,
+                            ),
+                          ),
+                        );
+                      },
+                      style: _buttonStyle(),
+                      child: Text(
+                        "Buy Product",
+                        style: TextStyle(
+                          fontSize: isSmallScreen ? 12 : 14,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
-          SizedBox(height: isSmallScreen ? 8 : 12),
         ],
       ),
     );
@@ -518,41 +573,44 @@ class _HomeScreenState extends State<HomeScreen> {
         children: [
           _imageBuilder(
               vet["photoUrl"], isSmallScreen ? 120 : 140, Icons.person),
-          Padding(
-            padding: EdgeInsets.all(isSmallScreen ? 8.0 : 12.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(vet["name"] ?? "Unnamed Vet",
-                    style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: isSmallScreen ? 14 : 16)),
-                const SizedBox(height: 4),
-                Text(vet["speciality"] ?? "Veterinarian",
-                    style: TextStyle(
-                        color: Colors.grey[600],
-                        fontSize: isSmallScreen ? 11 : 13)),
-                const SizedBox(height: 8),
-                Center(
-                  child: ElevatedButton(
-                    onPressed: () {
-                      if (!_isLoggedIn()) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text("Please login to book appointment"),
-                            backgroundColor: Color.fromRGBO(49, 39, 79, 1),
-                          ),
-                        );
-                        return;
-                      }
-                      _bookAppointment(vet);
-                    },
-                    style: _buttonStyle(),
-                    child: Text("Book Appointment",
-                        style: TextStyle(fontSize: isSmallScreen ? 11 : 13)),
+          Expanded(
+            child: Padding(
+              padding: EdgeInsets.all(isSmallScreen ? 8.0 : 12.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(vet["name"] ?? "Unnamed Vet",
+                      style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: isSmallScreen ? 14 : 16)),
+                  const SizedBox(height: 4),
+                  Text(vet["speciality"] ?? "Veterinarian",
+                      style: TextStyle(
+                          color: Colors.grey[600],
+                          fontSize: isSmallScreen ? 11 : 13)),
+                  const Spacer(), // 🟢 Pushes button to the bottom
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        if (!_isLoggedIn()) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text("Please login to book appointment"),
+                              backgroundColor: Color.fromRGBO(49, 39, 79, 1),
+                            ),
+                          );
+                          return;
+                        }
+                        _bookAppointment(vet);
+                      },
+                      style: _buttonStyle(),
+                      child: Text("Book Appointment",
+                          style: TextStyle(fontSize: isSmallScreen ? 11 : 13)),
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ],

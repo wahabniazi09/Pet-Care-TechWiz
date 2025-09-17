@@ -127,7 +127,7 @@ class ProfileScreen extends StatelessWidget {
                       Expanded(
                         child: OutlinedButton.icon(
                           icon:
-                              const Icon(Icons.edit, color: Colors.deepOrange),
+                              const Icon(Icons.edit, color: Colors.deepPurple),
                           label: const Text("Edit Profile"),
                           onPressed: () => Navigator.push(
                             context,
@@ -144,7 +144,7 @@ class ProfileScreen extends StatelessWidget {
                       Expanded(
                         child: OutlinedButton.icon(
                           icon: const Icon(Icons.logout,
-                              color: Colors.deepOrange),
+                              color: Colors.deepPurple),
                           label: const Text("Logout"),
                           onPressed: () => Authentication().logOut(context),
                         ),
@@ -198,7 +198,7 @@ class ProfileScreen extends StatelessWidget {
   Widget _buildMenuItem(BuildContext context,
       {required IconData icon, required String text, required Widget screen}) {
     return ListTile(
-      leading: Icon(icon, color: Colors.deepOrange),
+      leading: Icon(icon, color: Colors.deepPurple),
       title: Text(text, style: const TextStyle(fontSize: 16)),
       trailing: const Icon(Icons.arrow_forward_ios, size: 16),
       onTap: () =>

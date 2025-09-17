@@ -5,6 +5,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:pet_care/consts/consts.dart';
 
 class EditProfileScreen extends StatefulWidget {
   final String uid;
@@ -101,7 +102,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text("Edit Profile"),
-        backgroundColor: Colors.deepOrange,
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
@@ -117,7 +117,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                     height: 120,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      border: Border.all(color: Colors.deepOrange, width: 3),
+                      border: Border.all(color: Colors.deepPurple, width: 3),
                     ),
                     child: ClipOval(
                       child: kIsWeb
@@ -149,7 +149,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                         height: 40,
                         width: 40,
                         decoration: BoxDecoration(
-                          color: Colors.deepOrange,
+                          color: Colors.deepPurple,
                           shape: BoxShape.circle,
                           border: Border.all(color: Colors.white, width: 3),
                         ),
@@ -190,8 +190,11 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 child: ElevatedButton(
                   onPressed: _saveProfile,
                   style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.deepOrange),
-                  child: const Text("Save Changes"),
+                      backgroundColor: Colors.deepPurple),
+                  child: const Text(
+                    "Save Changes",
+                    style: TextStyle(color: whiteColor),
+                  ),
                 ),
               ),
             ],

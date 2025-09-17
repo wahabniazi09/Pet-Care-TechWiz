@@ -1,5 +1,4 @@
 import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:pet_care/consts/colors.dart';
 import 'package:pet_care/screen/petOwnerDashboard/homeScreen/components/addoptionFormScreen.dart';
@@ -13,7 +12,10 @@ class PetDetailsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(animal["animal_name"] ?? "Pet Details"),
+        title: Text(
+          animal["animal_name"] ?? "Pet Details",
+          overflow: TextOverflow.ellipsis, // long text adjust
+        ),
         backgroundColor: Colors.deepPurple,
         foregroundColor: Colors.white,
         iconTheme: IconThemeData(color: whiteColor),
@@ -23,37 +25,49 @@ class PetDetailsScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Pet Image
+            /// Pet Image
             Container(
-              height: 300,
+              height: MediaQuery.of(context).size.height * 0.3, // responsive
               width: double.infinity,
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(20),
                 color: Colors.grey[200],
               ),
               child: animal["animal_image"] != null
-                  ? Image.memory(
-                      base64Decode(animal["animal_image"]),
-                      fit: BoxFit.cover,
+                  ? ClipRRect(
+                      borderRadius: BorderRadius.circular(20),
+                      child: Image.memory(
+                        base64Decode(animal["animal_image"]),
+                        fit: BoxFit.cover,
+                        width: double.infinity,
+                        height: double.infinity,
+                      ),
                     )
                   : Center(
-                      child:
-                          Icon(Icons.pets, size: 100, color: Colors.grey[400]),
+                      child: Icon(
+                        Icons.pets,
+                        size: 100,
+                        color: Colors.grey[400],
+                      ),
                     ),
             ),
             const SizedBox(height: 20),
 
-            // Pet Name and Status
+            /// Pet Name and Status
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  animal["animal_name"] ?? "Unknown",
-                  style: const TextStyle(
-                    fontSize: 28,
-                    fontWeight: FontWeight.bold,
+                Expanded(
+                  child: Text(
+                    animal["animal_name"] ?? "Unknown",
+                    style: const TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    overflow: TextOverflow.ellipsis, // handle long name
                   ),
                 ),
+                const SizedBox(width: 10),
                 Chip(
                   backgroundColor: animal["adoption_status"] == "Adopted"
                       ? Colors.green
@@ -67,54 +81,56 @@ class PetDetailsScreen extends StatelessWidget {
             ),
             const SizedBox(height: 10),
 
-            // Breed and Age
+            /// Breed and Age
             Text(
-              "${animal["breed"] ?? "Mixed Breed"} • Age:  ${animal["animal_age"] ?? "Unknown age"}",
+              "${animal["breed"] ?? "Mixed Breed"} • Age: ${animal["animal_age"] ?? "Unknown age"}",
               style: TextStyle(
-                fontSize: 18,
+                fontSize: 16,
                 color: Colors.grey[600],
               ),
+              overflow: TextOverflow.ellipsis,
             ),
             const SizedBox(height: 20),
 
-            // Details Section
+            /// Details Section
             const Text(
               "Details",
-              style: TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 10),
 
-            // Details Grid
-            GridView.count(
-              crossAxisCount: 2,
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              childAspectRatio: 3,
-              crossAxisSpacing: 10,
-              mainAxisSpacing: 10,
-              children: [
-                _detailItem("Gender", animal["animal_gender"] ?? "Unknown",
-                    Icons.transgender),
-                _detailItem(
-                    "Size", animal["size"] ?? "Unknown", Icons.straighten),
-                _detailItem(
-                    "Color", animal["color"] ?? "Unknown", Icons.color_lens),
-                _detailItem("Location", animal["location"] ?? "Unknown",
-                    Icons.location_on),
-              ],
+            /// Responsive Details Grid
+            LayoutBuilder(
+              builder: (context, constraints) {
+                int crossAxisCount = constraints.maxWidth > 400 ? 2 : 1;
+                return GridView.count(
+                  crossAxisCount: crossAxisCount,
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  childAspectRatio: 4,
+                  crossAxisSpacing: 10,
+                  mainAxisSpacing: 10,
+                  children: [
+                    _detailItem("Gender", animal["animal_gender"] ?? "Unknown",
+                        Icons.transgender),
+                    _detailItem("Size", animal["animal_size"] ?? "Unknown",
+                        Icons.straighten),
+                    _detailItem("Color", animal["animal_color"] ?? "Unknown",
+                        Icons.color_lens),
+                    _detailItem(
+                        "Location",
+                        animal["animal_location"] ?? "Unknown",
+                        Icons.location_on),
+                  ],
+                );
+              },
             ),
             const SizedBox(height: 20),
 
-            // Description
+            /// Description
             const Text(
               "About",
-              style: TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 10),
             Text(
@@ -124,10 +140,11 @@ class PetDetailsScreen extends StatelessWidget {
                 color: Colors.grey[700],
                 height: 1.5,
               ),
+              textAlign: TextAlign.justify,
             ),
             const SizedBox(height: 30),
 
-            // Adopt Button
+            /// Adopt Button
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
@@ -160,6 +177,7 @@ class PetDetailsScreen extends StatelessWidget {
     );
   }
 
+  /// Custom detail item widget
   Widget _detailItem(String title, String value, IconData icon) {
     return Container(
       padding: const EdgeInsets.all(12),
@@ -169,26 +187,27 @@ class PetDetailsScreen extends StatelessWidget {
       ),
       child: Row(
         children: [
-          Icon(icon, color: Colors.deepPurple),
+          Icon(icon, color: Colors.deepPurple, size: 20),
           const SizedBox(width: 10),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                title,
-                style: TextStyle(
-                  fontSize: 12,
-                  color: Colors.grey[600],
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                  overflow: TextOverflow.ellipsis,
                 ),
-              ),
-              Text(
-                value,
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
+                Text(
+                  value,
+                  style: const TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  overflow: TextOverflow.ellipsis,
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ],
       ),

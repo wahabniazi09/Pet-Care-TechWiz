@@ -92,8 +92,7 @@ class BlogScreen extends StatelessWidget {
       backgroundColor: Colors.grey[100],
       appBar: AppBar(
         centerTitle: true,
-        title: const Text("Blogs", style: TextStyle(color: Colors.white)),
-        backgroundColor: Colors.deepPurple,
+        title: const Text("Blogs", style: TextStyle(color: Colors.black)),
       ),
       body: StreamBuilder<QuerySnapshot>(
         stream: getBlogs(),
